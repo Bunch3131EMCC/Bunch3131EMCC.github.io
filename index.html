@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>The Pheasant Invitational</title>
+
+  <link rel="manifest" href="manifest.json?v=1" />
+  <link rel="icon" href="assets/icon-32.png" sizes="32x32" />
+
+  <!-- OneSignal v16 default snippet -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "5f9e9dc2-5680-402a-876a-ff04423c131a"
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const subBtn  = document.getElementById('btn-subscribe');
+        const diagBtn = document.getElementById('btn-diagnostics');
+
+        subBtn.addEventListener('click', async () => {
+          try {
+            await OneSignal.User.PushSubscription.optIn();
+            await OneSignal.User.addTag('players','true');
+            const id    = OneSignal.User.PushSubscription.id;
+            const token = OneSignal.User.PushSubscription.token;
+            alert(id ? `Subscribed! ID: ${id}\nToken: ${token || '(none yet)'}` : 'Subscribed, but no ID yet');
+          } catch (e) {
+            alert('Subscribe error: ' + (e?.message || e));
+          }
+        });
+
+        diagBtn.addEventListener('click', async () => {
+          try {
+            const supported  = OneSignal.Notifications.isPushSupported();
+            const permission = OneSignal.Notifications.permission;
+            const id    = OneSignal.User.PushSubscription.id;
+            const token = OneSignal.User.PushSubscription.token;
+            const opted = OneSignal.User.PushSubscription.optedIn;
+            const tags  = await OneSignal.User.getTags();
+            alert(
+              'Supported: ' + supported + '\n' +
+              'Permission: ' + permission + '\n' +
+              'OptedIn: ' + opted + '\n' +
+              'Sub ID: ' + id + '\n' +
+              'Token: ' + token + '\n' +
+              'Tags: ' + JSON.stringify(tags)
+            );
+          } catch (e) {
+            alert('Diag error: ' + (e?.message || e));
+          }
+        });
+      });
+    });
+  </script>
+
+  <style>
+    :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:860px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .logo{width:72px;height:72px;border-radius:14px;border:1px solid var(--border);overflow:hidden;display:grid;place-items:center;background:#fff}
+    .logo img{width:100%;height:100%;object-fit:contain}
+    h1{margin:0;font-size:28px;font-weight:800}.muted{color:var(--muted)}
+    .card{border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;background:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:1px solid #111827;background:#111827;color:#fff;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn.alt{background:#fff;color:var(--fg);border-color:var(--border)}
+    .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px}
+    a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><img src="assets/logo.jpg" alt="Pheasant logo" /></div>
+      <div>
+        <h1>The Pheasant Invitational</h1>
+        <div class="muted">Push Alerts • Pairings • Links</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="row">
+        <button id="btn-subscribe" class="btn">Enable Notifications</button>
+        <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
+      </div>
+      <p class="muted" style="margin:10px 0 0">iPhone: open from the <em>Home Screen icon</em> (Add to Home Screen) before enabling notifications.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px 0;">Links</h3>
+      <div class="grid">
+        <a class="pill" href="#" target="_blank" rel="noopener">Live Scoring (placeholder)</a>
+        <a class="pill" href="#" target="_blank" rel="noopener">Pairings (placeholder)</a>
+        <a class="pill" href="#" target="_blank" rel="noopener">Local Rules (placeholder)</a>
+        <a class="pill" href="#" target="_blank" rel="noopener">Skins (placeholder)</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
