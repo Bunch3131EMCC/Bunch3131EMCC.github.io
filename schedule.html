@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#ffffff"/>
+  <title>Pheasant App · Schedule</title>
+
+  <link rel="manifest" href="manifest.json?v=4"/>
+  <link rel="icon" href="assets/icon_20pt@3x.png?v=4" sizes="32x32"/>
+
+  <!-- (reuse your apple-touch-icon links if you want consistent A2HS here) -->
+
+  <style>
+    :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:860px;margin:0 auto;padding:24px}
+    .muted{color:var(--muted)}
+    .card{border:1px solid var(--border);border-radius:14px;padding:16px;background:#fff}
+    a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h1 style="margin:0;">Event Schedule</h1>
+      <a class="pill" href="./">← Home</a>
+    </header>
+
+    <div id="schedule-full"></div>
+  </div>
+
+  <script src="schedule.js?v=4"></script>
+  <script>
+    renderFullSchedule('schedule-full', 'schedule.json');
+  </script>
+</body>
+</html>
