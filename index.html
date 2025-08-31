@@ -9,55 +9,7 @@
   <link rel="manifest" href="manifest.json?v=1" />
   <link rel="icon" href="assets/icon-32.png" sizes="32x32" />
 
-  <!-- OneSignal v16 default snippet -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "5f9e9dc2-5680-402a-876a-ff04423c131a"
-      });
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const subBtn  = document.getElementById('btn-subscribe');
-        const diagBtn = document.getElementById('btn-diagnostics');
-
-        subBtn.addEventListener('click', async () => {
-          try {
-            await OneSignal.User.PushSubscription.optIn();
-            await OneSignal.User.addTag('players','true');
-            const id    = OneSignal.User.PushSubscription.id;
-            const token = OneSignal.User.PushSubscription.token;
-            alert(id ? `Subscribed! ID: ${id}\nToken: ${token || '(none yet)'}` : 'Subscribed, but no ID yet');
-          } catch (e) {
-            alert('Subscribe error: ' + (e?.message || e));
-          }
-        });
-
-        diagBtn.addEventListener('click', async () => {
-          try {
-            const supported  = OneSignal.Notifications.isPushSupported();
-            const permission = OneSignal.Notifications.permission;
-            const id    = OneSignal.User.PushSubscription.id;
-            const token = OneSignal.User.PushSubscription.token;
-            const opted = OneSignal.User.PushSubscription.optedIn;
-            const tags  = await OneSignal.User.getTags();
-            alert(
-              'Supported: ' + supported + '\n' +
-              'Permission: ' + permission + '\n' +
-              'OptedIn: ' + opted + '\n' +
-              'Sub ID: ' + id + '\n' +
-              'Token: ' + token + '\n' +
-              'Tags: ' + JSON.stringify(tags)
-            );
-          } catch (e) {
-            alert('Diag error: ' + (e?.message || e));
-          }
-        });
-      });
-    });
-  </script>
-
+  
   <style>
     :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
     *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
@@ -102,5 +54,84 @@
       </div>
     </div>
   </div>
+<!-- Load the SDK first -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+
+<!-- Init AFTER page + SDK are ready; wire buttons with clear logs -->
+<script>
+  // Small status helper you can delete later
+  const log = (...args) => { console.log('[Pheasant]', ...args); };
+
+  window.addEventListener('load', () => {
+    log('window load fired, typeof OneSignal =', typeof OneSignal);
+
+    // OneSignal v16 uses a queue; push our init when SDK is present
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        log('OneSignal init starting');
+        await OneSignal.init({ appId: '5f9e9dc2-5680-402a-876a-ff04423c131a' });
+        log('OneSignal init complete');
+
+        const subBtn  = document.getElementById('btn-subscribe');
+        const diagBtn = document.getElementById('btn-diagnostics');
+
+        if (!subBtn || !diagBtn) {
+          console.error('Buttons not found in DOM.');
+          return;
+        }
+
+        subBtn.onclick = async () => {
+          try {
+            log('optIn click');
+            await OneSignal.User.PushSubscription.optIn();
+            await OneSignal.User.addTag('players','true');
+
+            const id    = OneSignal.User.PushSubscription.id;
+            const token = OneSignal.User.PushSubscription.token;
+            const opted = OneSignal.User.PushSubscription.optedIn;
+
+            alert(id
+              ? `Subscribed! ID: ${id}\nOptedIn: ${opted}\nToken: ${token || '(none yet)'}`
+              : 'Subscribed, but no ID yet');
+            log('optIn finished. id=', id, 'token=', token, 'optedIn=', opted);
+          } catch (e) {
+            console.error('optIn error', e);
+            alert('Subscribe error: ' + (e?.message || e));
+          }
+        };
+
+        diagBtn.onclick = async () => {
+          try {
+            const supported  = OneSignal.Notifications.isPushSupported();
+            const permission = OneSignal.Notifications.permission;
+            const id    = OneSignal.User.PushSubscription.id;
+            const token = OneSignal.User.PushSubscription.token;
+            const opted = OneSignal.User.PushSubscription.optedIn;
+            const tags  = await OneSignal.User.getTags();
+            alert(
+              'Supported: ' + supported + '\n' +
+              'Permission: ' + permission + '\n' +
+              'OptedIn: ' + opted + '\n' +
+              'Sub ID: ' + id + '\n' +
+              'Token: ' + token + '\n' +
+              'Tags: ' + JSON.stringify(tags)
+            );
+            log('diag', { supported, permission, id, token, opted, tags });
+          } catch (e) {
+            console.error('diag error', e);
+            alert('Diag error: ' + (e?.message || e));
+          }
+        };
+
+        log('Buttons wired');
+      } catch (e) {
+        console.error('init error', e);
+        alert('Init error: ' + (e?.message || e));
+      }
+    });
+  });
+</script>
+  
 </body>
 </html>
