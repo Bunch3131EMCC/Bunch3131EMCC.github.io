@@ -4,12 +4,32 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ffffff" />
-  <title>The Pheasant Invitational</title>
 
-  <link rel="manifest" href="manifest.json?v=1" />
-  <link rel="icon" href="assets/icon_20pt@3x.png" sizes="32x32" />
+  <!-- Name shown on iOS Add-to-Home-Screen -->
+  <meta name="apple-mobile-web-app-title" content="Pheasant App" />
+  <meta name="application-name" content="Pheasant App" />
+  <title>Pheasant App</title>
 
-  
+  <!-- Manifest (bump version to break cache) -->
+  <link rel="manifest" href="manifest.json?v=4" />
+
+  <!-- Favicon (fallback). You don't have a 32x32 file yet; this will be scaled. -->
+  <link rel="icon" href="assets/icon_20pt@3x.png?v=4" sizes="32x32" />
+
+  <!-- iOS / Safari icons (point to your assets folder) -->
+  <link rel="apple-touch-icon" sizes="40x40" href="assets/icon_20pt@2x.png?v=4">
+  <link rel="apple-touch-icon" sizes="60x60" href="assets/icon_20pt@3x.png?v=4">
+  <link rel="apple-touch-icon" sizes="58x58" href="assets/icon_29pt@2x.png?v=4">
+  <link rel="apple-touch-icon" sizes="87x87" href="assets/icon_29pt@3x.png?v=4">
+  <link rel="apple-touch-icon" sizes="80x80" href="assets/icon_40pt@2x.png?v=4">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_40pt@3x.png?v=4">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_60pt@2x.png?v=4">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon_60pt@3x.png?v=4">
+  <link rel="apple-touch-icon" sizes="76x76" href="assets/icon_76pt@1x.png?v=4">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon_76pt@2x.png?v=4">
+  <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=4">
+  <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=4">
+
   <style>
     :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
     *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
@@ -26,6 +46,7 @@
     a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <header>
