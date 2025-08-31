@@ -73,6 +73,10 @@
         <a class="pill" href="#" target="_blank" rel="noopener">Local Rules (placeholder)</a>
         <a class="pill" href="#" target="_blank" rel="noopener">Skins (placeholder)</a>
       </div>
+
+      <div class="card" id="schedule-today" style="margin-top:16px;">
+  <!-- schedule summary will render here -->
+</div>
     </div>
   </div>
 <!-- Load the SDK first -->
@@ -153,6 +157,9 @@
     });
   });
 </script>
-  
+  <script src="schedule.js?v=4"></script>
+<script>
+  renderScheduleSummary('schedule-today', 'schedule.json');
+</script>
 </body>
 </html>
