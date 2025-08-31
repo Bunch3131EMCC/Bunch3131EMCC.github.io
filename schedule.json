@@ -1,0 +1,45 @@
+{
+  "timezone": "America/Los_Angeles",
+  "days": [
+    {
+      "date": "2025-09-11",
+      "label": "Thursday, September 11 — Day 1",
+      "events": [
+        { "time": "07:00", "title": "Registration Opens" },
+        { "time": "07:00", "title": "Breakfast and Bloody Mary Bar" },
+        { "time": "08:30", "title": "9-Hole Par 3 Contest" },
+        { "time": "11:30", "title": "9-Hole Match 1" },
+        { "time": "15:15", "title": "Open Horse Race" },
+        { "time": "15:45", "title": "Putting Contest Qualifying / Long Drive Competition Open" },
+        { "time": "18:00", "title": "Dinner Served" }
+      ]
+    },
+    {
+      "date": "2025-09-12",
+      "label": "Friday, September 12 — Day 2",
+      "events": [
+        { "time": "07:00", "title": "Registration/Breakfast/Bloody Mary Bar Open" },
+        { "time": "09:00", "title": "9-Hole Match #2" },
+        { "time": "12:00", "title": "Lunch Served" },
+        { "time": "13:00", "title": "9-Hole Match #3" },
+        { "time": "16:00", "title": "Putting Contest / Long Drive / Friday Night Party" },
+        { "time": "18:00", "title": "Dinner Served" },
+        { "time": "21:15", "title": "Late-night Snack" }
+      ]
+    },
+    {
+      "date": "2025-09-13",
+      "label": "Saturday, September 13 — Day 3",
+      "events": [
+        { "time": "07:00", "title": "Breakfast/Bloody Mary Bar Open" },
+        { "time": "07:30", "title": "Putting Contest Semifinals" },
+        { "time": "08:30", "title": "9-Hole Match #4" },
+        { "time": "11:30", "title": "Lunch / Putting Contest Championship" },
+        { "time": "12:30", "title": "9-Hole Match #5" },
+        { "time": "16:00", "title": "Championship Horse Race" },
+        { "time": "17:30", "title": "Cocktails & Heavy Hors D'oeuvres" },
+        { "time": "18:30", "title": "Awards Presentation" }
+      ]
+    }
+  ]
+}
