@@ -1,6 +1,6 @@
 {
   "name": "Pheasant App",
-  "short_name": "Pheasant",
+  "short_name": "Pheasant Messenger",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
