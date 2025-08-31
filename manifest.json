@@ -1,21 +1,22 @@
 {
-  "name": "The Pheasant Invitational",
-  "short_name": "Pheasant Invite",
-  "start_url": "./",
-  "scope": "./",
+  "name": "Pheasant App",
+  "short_name": "Pheasant",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "theme_color": "#2563eb",
   "icons": [
-    {
-      "src": "assets/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "assets/icon_20pt@2x.png?v=4",  "sizes": "40x40",   "type": "image/png" },
+    { "src": "assets/icon_20pt@3x.png?v=4",  "sizes": "60x60",   "type": "image/png" },
+    { "src": "assets/icon_29pt@2x.png?v=4",  "sizes": "58x58",   "type": "image/png" },
+    { "src": "assets/icon_29pt@3x.png?v=4",  "sizes": "87x87",   "type": "image/png" },
+    { "src": "assets/icon_40pt@2x.png?v=4",  "sizes": "80x80",   "type": "image/png" },
+    { "src": "assets/icon_40pt@3x.png?v=4",  "sizes": "120x120", "type": "image/png" },
+    { "src": "assets/icon_60pt@2x.png?v=4",  "sizes": "120x120", "type": "image/png" },
+    { "src": "assets/icon_60pt@3x.png?v=4",  "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/icon_76pt@1x.png?v=4",  "sizes": "76x76",   "type": "image/png" },
+    { "src": "assets/icon_76pt@2x.png?v=4",  "sizes": "152x152", "type": "image/png" },
+    { "src": "assets/icon_83_5pt@2x.png?v=4","sizes": "167x167", "type": "image/png" },
+    { "src": "assets/icon_1024pt@1x.png?v=4","sizes": "1024x1024","type": "image/png", "purpose": "any maskable" }
   ]
 }
