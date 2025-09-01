@@ -3,6 +3,11 @@ function toDate(tz, ymd, hm) {
   const [h,m]   = hm.split(':').map(Number);
   return new Date(Y, M-1, D, h, m, 0, 0);
 }
+function getNow() {
+  const q = new URLSearchParams(location.search).get('now');
+  if (q) { const d = new Date(q); if (!isNaN(+d)) return d; }
+  return new Date();
+}
 
 async function fetchSchedule(url) {
   const ver = url.includes('?') ? '&' : '?';
@@ -19,7 +24,7 @@ async function renderScheduleSummary(mountId, jsonUrl) {
   try { data = await fetchSchedule(jsonUrl); }
   catch (e) { el.innerHTML = `<div class="muted">Schedule failed to load (${e.message}).</div>`; throw e; }
 
-  const now = new Date();
+  const now = getNow();
   const days = Array.isArray(data.days) ? data.days : [];
   const tz   = data.timezone || 'America/Los_Angeles';
   const todayYMD = now.toISOString().slice(0,10);
@@ -66,7 +71,7 @@ async function renderFullSchedule(mountId, jsonUrl) {
   try { data = await fetchSchedule(jsonUrl); }
   catch (e) { el.innerHTML = `<div class="muted">Schedule failed to load (${e.message}).</div>`; throw e; }
 
-  const now = new Date();
+  const now = getNow();
   const tz  = data.timezone || 'America/Los_Angeles';
   let out = '';
 
