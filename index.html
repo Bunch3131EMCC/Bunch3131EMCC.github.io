@@ -157,17 +157,23 @@
       }
     });
   });
-</script>
-  <script src="schedule.js?v=4"></script>
-<script>
+
   renderScheduleSummary('schedule-today', 'schedule.json');
 
-<script defer src="assets/schedule.js?v=7"></script>
+<script defer src="assets/schedule.js?v=8"></script>
 <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    renderScheduleSummary('schedule-today', 'schedule.json'); // or 'assets/schedule.json'
+  window.addEventListener('DOMContentLoaded', async () => {
+    const mount = 'schedule-today';
+    try {
+      // try root json (e.g., /schedule.json)
+      await renderScheduleSummary(mount, 'schedule.json');
+    } catch {
+      // fallback if you placed it in /assets
+      await renderScheduleSummary(mount, 'assets/schedule.json');
+    }
   });
 </script>
+
 
 </body>
 </html>
