@@ -87,38 +87,34 @@
 <!-- Load the SDK first -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
 
-<!-- OneSignal init -->
+<!-- OneSignal init (replace your current init block with this) -->
 <script>
-  // Small logger
   const log = (...args) => console.log('[Pheasant]', ...args);
 
-  // Show/hide controls based on current subscription state
   function refreshUI(OneSignal) {
     const subBtn  = document.getElementById('btn-subscribe');
     const diagBtn = document.getElementById('btn-diagnostics');
     const iosInfo = document.getElementById('ios-instructions');
-
     if (!subBtn || !diagBtn) return;
 
-    const supported  = OneSignal.Notifications.isPushSupported();
-    const permission = OneSignal.Notifications.permission; // 'granted' | 'denied' | 'default'
-    const opted      = OneSignal.User.PushSubscription.optedIn === true;
+    const supported          = OneSignal.Notifications.isPushSupported();
+    const permissionGranted  = OneSignal.Notifications.permission === true; // v16 is boolean
+    const subscribed         = OneSignal.User.PushSubscription.optedIn === true
+                               && !!OneSignal.User.PushSubscription.id;
 
-    // If push isn't supported, hide both buttons & leave instructions hidden (no point showing)
+    const card = subBtn.closest('.card');
+
+    // If push not supported, just hide the whole card to avoid confusion
     if (!supported) {
-      subBtn.style.display = 'none';
-      diagBtn.style.display = 'none';
-      if (iosInfo) iosInfo.style.display = 'none';
+      if (card) card.style.display = 'none';
       return;
     }
 
-    // Hide everything once the user is truly subscribed
-    if (opted && permission === 'granted') {
-      subBtn.style.display = 'none';
-      diagBtn.style.display = 'none';
-      if (iosInfo) iosInfo.style.display = 'none';
+    // Hide everything once truly subscribed with permission granted
+    if (permissionGranted && subscribed) {
+      if (card) card.style.display = 'none';
     } else {
-      // Otherwise show the controls (and keep the instructions visible to guide users)
+      if (card) card.style.display = '';
       subBtn.style.display = '';
       diagBtn.style.display = '';
       if (iosInfo) iosInfo.style.display = '';
@@ -126,39 +122,27 @@
   }
 
   window.addEventListener('load', () => {
-    log('window load fired, typeof OneSignal =', typeof OneSignal);
-
-    // OneSignal v16 uses a queue
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function (OneSignal) {
       try {
-        log('OneSignal init starting');
         await OneSignal.init({ appId: '5f9e9dc2-5680-402a-876a-ff04423c131a' });
-        log('OneSignal init complete');
 
         const subBtn  = document.getElementById('btn-subscribe');
         const diagBtn = document.getElementById('btn-diagnostics');
         if (!subBtn || !diagBtn) { console.error('Buttons not found in DOM.'); return; }
 
-        // Initial UI (already subscribed? hide them)
+        // Initial state
         refreshUI(OneSignal);
+
+        // React to future state changes
+        OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
+        OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
 
         subBtn.onclick = async () => {
           try {
-            log('optIn click');
             await OneSignal.User.PushSubscription.optIn();
-            await OneSignal.User.addTag('players','true');
-
-            // After success, hide everything
-            refreshUI(OneSignal);
-
-            const id    = OneSignal.User.PushSubscription.id;
-            const token = OneSignal.User.PushSubscription.token;
-            const opted = OneSignal.User.PushSubscription.optedIn;
-            alert(id
-              ? `Subscribed! ID: ${id}\nOptedIn: ${opted}\nToken: ${token || '(none yet)'}`
-              : 'Subscribed, but no ID yet');
-            log('optIn finished. id=', id, 'token=', token, 'optedIn=', opted);
+            await OneSignal.User.addTag('players', 'true');
+            refreshUI(OneSignal); // hide immediately after a successful opt-in
           } catch (e) {
             console.error('optIn error', e);
             alert('Subscribe error: ' + (e?.message || e));
@@ -181,18 +165,15 @@
               'Token: ' + token + '\n' +
               'Tags: ' + JSON.stringify(tags)
             );
-            log('diag', { supported, permission, id, token, opted, tags });
           } catch (e) {
             console.error('diag error', e);
             alert('Diag error: ' + (e?.message || e));
           }
         };
 
-        // A couple delayed refreshes in case the browser updates permission state asynchronously
+        // In case state flips shortly after init
         setTimeout(() => refreshUI(OneSignal), 500);
         setTimeout(() => refreshUI(OneSignal), 2000);
-
-        log('Buttons wired');
       } catch (e) {
         console.error('init error', e);
         alert('Init error: ' + (e?.message || e));
