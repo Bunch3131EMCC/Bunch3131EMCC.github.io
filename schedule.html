@@ -30,9 +30,13 @@
     <div id="schedule-full"></div>
   </div>
 
-  <script src="schedule.js?v=4"></script>
-  <script>
-    renderFullSchedule('schedule-full', 'schedule.json');
-  </script>
+ <script defer src="assets/schedule.js?v=10"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    // Use the path where your JSON lives:
+    renderFullSchedule('schedule-full', 'schedule.json'); // or 'assets/schedule.json'
+  });
+</script>
+
 </body>
 </html>
