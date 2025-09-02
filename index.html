@@ -182,6 +182,20 @@
       }
     });
   });
+
+  <script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async function (OneSignal) {
+    await OneSignal.init({
+      appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+      // Use a relative path so scope matches your project path
+      serviceWorkerPath: 'OneSignalSDKWorker.js?v=2'
+      // (Optional) serviceWorkerUpdaterPath: 'OneSignalSDKUpdaterWorker.js?v=2'
+    });
+    // ...the rest of your code...
+  });
+</script>
+
 </script>
   <!-- Notification Inbox Render -->
 <script type="module" defer src="assets/inbox.js?v=1"></script>
