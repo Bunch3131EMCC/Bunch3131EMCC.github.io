@@ -125,93 +125,106 @@
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js?v=6"></script>
 
-  <!-- OneSignal init + UI logic -->
-  <script>
-    const log = (...a) => console.log('[Pheasant]', ...a);
+ <!-- OneSignal init + UI logic (guarded) -->
+<script>
+  // Prevent double init if the page re-renders or scripts run twice
+  window.__OS_INITED__ = window.__OS_INITED__ || false;
 
-    function granted(OneSignal) {
-      const p = OneSignal.Notifications.permission;
-      return p === true || p === 'granted';
+  const log = (...a) => console.log('[Pheasant]', ...a);
+
+  function granted(OneSignal) {
+    const p = OneSignal.Notifications.permission;
+    return p === true || p === 'granted';
+  }
+  function showStatus(OneSignal) {
+    const el = document.getElementById('push-status');
+    if (!el) return;
+    const supported = OneSignal.Notifications.isPushSupported();
+    const perm  = OneSignal.Notifications.permission;
+    const id    = OneSignal.User.PushSubscription.id || null;
+    const opted = OneSignal.User.PushSubscription.optedIn === true;
+    el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
+  }
+  function refreshUI(OneSignal) {
+    const subBtn  = document.getElementById('btn-subscribe');
+    const diagBtn = document.getElementById('btn-diagnostics');
+    const iosInfo = document.getElementById('ios-instructions');
+    const card    = document.getElementById('push-card');
+    if (!subBtn || !diagBtn || !card) return;
+
+    const supported = OneSignal.Notifications.isPushSupported();
+    const ok = supported && granted(OneSignal) && OneSignal.User.PushSubscription.optedIn === true && !!OneSignal.User.PushSubscription.id;
+
+    card.style.display = ok ? 'none' : '';
+    if (!ok) {
+      subBtn.style.display = '';
+      diagBtn.style.display = '';
+      if (iosInfo) iosInfo.style.display = '';
     }
-    function showStatus(OneSignal) {
-      const el = document.getElementById('push-status');
-      if (!el) return;
-      const supported = OneSignal.Notifications.isPushSupported();
-      const perm  = OneSignal.Notifications.permission;
-      const id    = OneSignal.User.PushSubscription.id || null;
-      const opted = OneSignal.User.PushSubscription.optedIn === true;
-      el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
-    }
-    function refreshUI(OneSignal) {
-      const subBtn  = document.getElementById('btn-subscribe');
-      const diagBtn = document.getElementById('btn-diagnostics');
-      const iosInfo = document.getElementById('ios-instructions');
-      const card    = document.getElementById('push-card');
-      if (!subBtn || !diagBtn || !card) return;
+    showStatus(OneSignal);
+  }
 
-      const supported = OneSignal.Notifications.isPushSupported();
-      const ok = supported && granted(OneSignal) && OneSignal.User.PushSubscription.optedIn === true && !!OneSignal.User.PushSubscription.id;
+  window.addEventListener('load', () => {
+    if (window.__OS_INITED__) return;        // <-- guard
+    window.__OS_INITED__ = true;
 
-      // Hide the whole card when truly subscribed
-      card.style.display = ok ? 'none' : '';
-      if (!ok) {
-        subBtn.style.display = '';
-        diagBtn.style.display = '';
-        if (iosInfo) iosInfo.style.display = '';
-      }
-      showStatus(OneSignal);
-    }
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        await OneSignal.init({
+          appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+          serviceWorkerPath: '/OneSignalSDKWorker.js'
+        });
 
-    window.addEventListener('load', () => {
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      window.OneSignalDeferred.push(async function (OneSignal) {
-        try {
-          await OneSignal.init({
-            appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
-            serviceWorkerPath: '/OneSignalSDKWorker.js'
-          });
-
-          const subBtn  = document.getElementById('btn-subscribe');
-          const diagBtn = document.getElementById('btn-diagnostics');
-          if (!subBtn || !diagBtn) return;
-
-          refreshUI(OneSignal);
+        // Prevent wiring listeners twice if something re-calls this block
+        if (!window.__OS_LISTENERS__) {
+          window.__OS_LISTENERS__ = true;
 
           OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
           OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
 
-          subBtn.onclick = async () => {
-            try {
-              log('optIn click');
-              await OneSignal.User.PushSubscription.optIn();
-              await OneSignal.User.addTag('players','true');
-            } catch (e) {
-              console.error('optIn error', e);
-              alert('Subscribe error: ' + (e?.message || e));
-            } finally {
-              refreshUI(OneSignal);
-            }
-          };
+          const subBtn  = document.getElementById('btn-subscribe');
+          const diagBtn = document.getElementById('btn-diagnostics');
 
-          diagBtn.onclick = async () => {
-            const supported = OneSignal.Notifications.isPushSupported();
-            const p   = OneSignal.Notifications.permission;
-            const id  = OneSignal.User.PushSubscription.id;
-            const tok = OneSignal.User.PushSubscription.token;
-            const opt = OneSignal.User.PushSubscription.optedIn;
-            alert(`supported=${supported}\npermission=${String(p)}\noptedIn=${opt}\nid=${id || '(null)'}\ntoken=${tok || '(none)'}`);
-            showStatus(OneSignal);
-          };
+          if (subBtn) {
+            subBtn.onclick = async () => {
+              try {
+                log('optIn click');
+                await OneSignal.User.PushSubscription.optIn();
+                await OneSignal.User.addTag('players','true');
+              } catch (e) {
+                console.error('optIn error', e);
+                alert('Subscribe error: ' + (e?.message || e));
+              } finally {
+                refreshUI(OneSignal);
+              }
+            };
+          }
 
-          setTimeout(() => refreshUI(OneSignal), 500);
-          setTimeout(() => refreshUI(OneSignal), 2000);
-        } catch (e) {
-          console.error('init error', e);
-          alert('Init error: ' + (e?.message || e));
+          if (diagBtn) {
+            diagBtn.onclick = async () => {
+              const supported = OneSignal.Notifications.isPushSupported();
+              const p   = OneSignal.Notifications.permission;
+              const id  = OneSignal.User.PushSubscription.id;
+              const tok = OneSignal.User.PushSubscription.token;
+              const opt = OneSignal.User.PushSubscription.optedIn;
+              alert(`supported=${supported}\npermission=${String(p)}\noptedIn=${opt}\nid=${id || '(null)'}\ntoken=${tok || '(none)'}`);
+              showStatus(OneSignal);
+            };
+          }
         }
-      });
+
+        refreshUI(OneSignal);
+        setTimeout(() => refreshUI(OneSignal), 500);
+        setTimeout(() => refreshUI(OneSignal), 2000);
+      } catch (e) {
+        console.error('init error', e);
+        alert('Init error: ' + (e?.message || e));
+      }
     });
-  </script>
+  });
+</script>
+
 
   <!-- Inbox (v11) -->
   <script type="module" src="assets/inbox.js?v=11"></script>
