@@ -31,21 +31,48 @@ function normalizeEvent(evtOrPayload) {
 }
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
-  // iOS may send empty payloads — still log so user sees the open
   if (!a.title && !a.body) a.title = 'Notification opened';
+
+  const now = Date.now();
+  // session-level quick dedupe
+  window.__pheasantSeen = window.__pheasantSeen || [];
+  // consider alerts same if titles match and within 30s, ignoring empty vs non-empty body
+  const sameTitleRecent = window.__pheasantSeen.find(x => x.title === (a.title || '') && (now - x.t) < 30000);
 
   const list = loadAlerts();
   const twoMin = 2 * 60 * 1000;
-  const dup = list.some(x => Math.abs((x.at || 0) - a.at) < twoMin && x.title === a.title && x.body === a.body);
-  if (!dup) {
-    list.unshift(a);
-    saveAlerts(list);
-    renderRecentAlerts('recent-alerts', 5);
-    renderInboxPage('inbox');
-    dbg('saved', a);
-  } else {
-    dbg('skipped duplicate', a);
+
+  // find a recent stored item with same title within 2 min
+  const idx = list.findIndex(x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || ''));
+
+  if (idx >= 0) {
+    // prefer richer body: if new has body and old doesn't (or shorter), replace old
+    const old = list[idx];
+    const oldBody = (old.body || '');
+    const newBody = (a.body || '');
+    if (newBody && newBody.length > oldBody.length) {
+      list[idx] = a;
+      saveAlerts(list);
+      renderRecentAlerts('recent-alerts', 5);
+      renderInboxPage('inbox');
+    }
+    // record sighting and exit (we already had an entry)
+    if (!sameTitleRecent) window.__pheasantSeen.push({ title: a.title || '', t: now });
+    return;
   }
+
+  // if we saw this title seconds ago (likely SW then page), skip second copy
+  if (sameTitleRecent) return;
+
+  // otherwise add new
+  list.unshift(a);
+  saveAlerts(list);
+  renderRecentAlerts('recent-alerts', 5);
+  renderInboxPage('inbox');
+
+  window.__pheasantSeen.push({ title: a.title || '', t: now });
+}
+
 }
 
 // Renderers
