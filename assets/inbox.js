@@ -1,92 +1,86 @@
-// assets/inbox.js  (v1)
-const INBOX_KEY = 'pheasant_inbox_v1';
+// /assets/inbox.js  (v3)
+const STORAGE_KEY = 'pheasant_alerts_v1';
 
-function loadInbox() {
-  try { return JSON.parse(localStorage.getItem(INBOX_KEY)) || []; }
+function loadAlerts() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
   catch { return []; }
 }
-function saveInbox(list) {
-  localStorage.setItem(INBOX_KEY, JSON.stringify(list.slice(0, 100)));
+function saveAlerts(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
 }
-function normalizeEvent(evt) {
-  const n = (evt && evt.notification) ? evt.notification : evt || {};
-  const title = n.title || n.heading || document.title || 'Notification';
-  const body  = n.body  || n.content || '';
-  const url   = n.url   || n.launchURL || location.origin;
-  const data  = n.additionalData || n.data || {};
-  const id    = n.id || n.notificationId || data.id || String(Date.now());
-  return { id, ts: Date.now(), title, body, url, data };
+function normalizeEvent(evtOrPayload) {
+  const e = evtOrPayload || {};
+  const n = e.notification || e;
+  const data = n.data || e.additionalData || {};
+  const title = n.title || e.title || data.title || 'Pheasant Alert';
+  const body  = n.body  || e.body  || data.alert || data.body || '';
+  const url   = data.url || data.launchURL || data.openURL || (location.origin + location.pathname);
+  const at    = e.at || Date.now();
+  return { title, body, url, at };
 }
-function addToInbox(evt) {
-  const list = loadInbox();
-  const msg = normalizeEvent(evt);
-  // avoid exact-duplicate ids at the top
-  if (list.find(x => x.id === msg.id)) msg.id = msg.id + '-' + Date.now();
-  list.unshift(msg);
-  saveInbox(list);
+function addAlert(evtOrPayload) {
+  const a = normalizeEvent(evtOrPayload);
+  if (!a.title && !a.body) return;
+  const list = loadAlerts();
+  const twoMin = 2 * 60 * 1000;
+  if (!list.some(x => Math.abs((x.at || 0) - a.at) < twoMin && x.title === a.title && x.body === a.body)) {
+    list.unshift(a);
+    saveAlerts(list);
+    renderRecentAlerts('recent-alerts');
+  }
 }
 
-export function renderRecentAlerts(mountId, limit = 5) {
+export function renderRecentAlerts(mountId = 'recent-alerts', max = 10) {
   const el = document.getElementById(mountId);
   if (!el) return;
-  const list = loadInbox();
-
+  const list = loadAlerts().slice(0, max);
   if (!list.length) {
-    el.innerHTML = `<h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
-      <div class="muted">No alerts yet.</div>`;
+    el.innerHTML = `<h3 style="margin:0 0 8px 0;">Recent Alerts</h3><div class="muted">No recent alerts yet.</div>`;
     return;
   }
-
-  const items = list.slice(0, limit).map(m => `
-    <div style="padding:8px 0;border-top:1px solid #e5e7eb;">
-      <div style="font-weight:600">${m.title}</div>
-      <div class="muted">${m.body}</div>
-      <div class="muted" style="font-size:12px;margin-top:4px;">
-        ${new Date(m.ts).toLocaleString()}
-      </div>
-    </div>`).join('');
-
   el.innerHTML = `
     <h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
-    ${items}
-    <div style="margin-top:10px;">
-      <a class="pill" href="inbox.html">View All Alerts</a>
-      <button id="clear-inbox" class="btn alt" style="margin-left:8px;padding:6px 10px;font-size:14px;">Clear</button>
-    </div>
-  `;
-
-  const clearBtn = document.getElementById('clear-inbox');
-  clearBtn?.addEventListener('click', () => { saveInbox([]); renderRecentAlerts(mountId, limit); });
+    <ul style="list-style:none; padding:0; margin:0;">
+      ${list.map(item => {
+        const when = new Date(item.at);
+        const time = when.toLocaleString([], { hour: 'numeric', minute: '2-digit' });
+        return `
+          <li style="padding:8px 0; border-top:1px solid #e5e7eb;">
+            <div style="font-weight:600;">${item.title || 'Pheasant Alert'}</div>
+            ${item.body ? `<div class="muted">${item.body}</div>` : ''}
+            <div class="muted" style="font-size:12px; margin-top:4px;">${time}</div>
+          </li>`;
+      }).join('')}
+    </ul>`;
 }
 
-export function renderInboxPage(mountId = 'inbox') {
-  const el = document.getElementById(mountId);
-  if (!el) return;
-  const list = loadInbox();
-  if (!list.length) {
-    el.innerHTML = `<div class="muted">No alerts yet.</div>`;
-    return;
-  }
-  el.innerHTML = list.map(m => `
-    <section class="card" style="margin-top:12px;">
-      <div style="font-weight:700">${m.title}</div>
-      <div style="margin-top:6px;">${m.body}</div>
-      <div class="muted" style="font-size:12px;margin-top:6px;">${new Date(m.ts).toLocaleString()}</div>
-    </section>`).join('');
-}
-
-// Hook OneSignal events if SDK is present
-(function attachOneSignalListeners(){
-  // Wait until OneSignal is available & initialized
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(function(OneSignal) {
-    try {
-      // Fires when user taps the notification
-      OneSignal.Notifications.addEventListener('click', (evt) => { try { addToInbox(evt); } catch {} });
-      // Fires when a notification would show while your page is open
-      OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => { try { addToInbox(evt); } catch {} });
-    } catch (e) {
-      console.warn('[inbox] Could not attach OneSignal listeners', e);
+// --- Listen for messages from the SW bridge ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
+      addAlert(event.data.payload);
     }
   });
-})();
+
+  // Handshake: after load, ask the SW if it has a recent click we missed
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
+    } catch {}
+  });
+}
+
+// Initial render
+document.addEventListener('DOMContentLoaded', () => {
+  renderRecentAlerts('recent-alerts', 5);
+});
+
+// --- Hook OneSignal page events too (for when app is open) ---
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+window.OneSignalDeferred.push(function (OneSignal) {
+  try {
+    OneSignal.Notifications.addEventListener('click', (evt) => addAlert(evt));
+    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => addAlert(evt));
+  } catch {}
+});
