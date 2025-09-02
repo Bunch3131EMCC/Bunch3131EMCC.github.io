@@ -193,8 +193,22 @@
 
 
 <!-- Notification Inbox (v4) -->
-<script type="module" src="assets/inbox.js?v=8"></script>
+<script type="module" src="assets/inbox.js?v=9"></script>
 
+<script>
+window.addEventListener('load', () => {
+  const el = document.getElementById('recent-alerts');
+  if (el && !el.innerHTML.trim()) {
+    el.innerHTML = `
+      <h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
+      <div class="muted">No recent alerts yet.</div>
+      <div style="margin-top:10px;">
+        <a class="pill" href="inbox.html">View All Alerts</a>
+        <button id="clear-inbox" class="btn alt" style="margin-left:8px;padding:6px 10px;font-size:14px;">Clear</button>
+      </div>`;
+  }
+});
+</script>
 
 
 <!-- Load schedule code, THEN call it -->
