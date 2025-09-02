@@ -1,6 +1,4 @@
-// /assets/inbox.js  (v10 fixed)
-// NOTE: previous copy had an extra stray "}" after addAlert() that broke the module.
-
+// /assets/inbox.js (v13)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 // Optional on-page debug (use ?debug=1)
@@ -17,13 +15,8 @@ function dbg(...args) {
 }
 
 // Storage helpers
-function loadAlerts() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
-}
-function saveAlerts(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
-}
+function loadAlerts() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
+function saveAlerts(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100))); }
 
 // Normalize + add
 function normalizeEvent(evtOrPayload) {
@@ -36,30 +29,19 @@ function normalizeEvent(evtOrPayload) {
   const at    = e.at || Date.now();
   return { title, body, url, at };
 }
-
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
   if (!a.title && !a.body) a.title = 'Notification opened';
 
   const now = Date.now();
-
-  // session-level quick dedupe
   window.__pheasantSeen = window.__pheasantSeen || [];
-  // consider alerts same if titles match and within 30s, ignoring empty vs non-empty body
-  const sameTitleRecent = window.__pheasantSeen.find(
-    x => x.title === (a.title || '') && (now - x.t) < 30000
-  );
+  const sameTitleRecent = window.__pheasantSeen.find(x => x.title === (a.title || '') && (now - x.t) < 30000);
 
   const list = loadAlerts();
   const twoMin = 2 * 60 * 1000;
 
-  // find a recent stored item with same title within 2 min
-  const idx = list.findIndex(
-    x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || '')
-  );
-
+  const idx = list.findIndex(x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || ''));
   if (idx >= 0) {
-    // prefer richer body: if new has body and old doesn't (or shorter), replace old
     const old = list[idx];
     const oldBody = (old.body || '');
     const newBody = (a.body || '');
@@ -69,15 +51,12 @@ function addAlert(evtOrPayload) {
       renderRecentAlerts('recent-alerts', 5);
       renderInboxPage('inbox');
     }
-    // record sighting and exit (we already had an entry)
     if (!sameTitleRecent) window.__pheasantSeen.push({ title: a.title || '', t: now });
     return;
   }
 
-  // if we saw this title seconds ago (likely SW then page), skip second copy
   if (sameTitleRecent) return;
 
-  // otherwise add new
   list.unshift(a);
   saveAlerts(list);
   renderRecentAlerts('recent-alerts', 5);
@@ -143,25 +122,17 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
     OneSignal.Notifications.addEventListener('click', (evt) => { dbg('OS click', evt); addAlert(evt); });
-   OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
-  try {
-    dbg('OS fg', evt);
-    // 1) Log it
-    addAlert(evt);
-    // 2) Take control on iOS (prevents the SDK’s default path)
-    //    then show the toast ourselves so the user still sees it
-    if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
-    const n = evt?.notification;
-    if (n && typeof n.display === 'function') n.display();
-  } catch (e) {
-    dbg('OS fg error', e);
-  }
-});
-
+    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+      dbg('OS fg', evt);
+      addAlert(evt);
+      if (evt?.preventDefault) evt.preventDefault();
+      const n = evt?.notification;
+      if (n?.display) n.display();
+    });
   } catch (e) { dbg('OS listeners error', e); }
 });
 
-// SW messages (tap from closed)
+// SW messages (tap from closed, push forwarders)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
@@ -170,6 +141,14 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+// Page messages (foreground bridge via window.postMessage)
+window.addEventListener('message', (event) => {
+  if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
+    dbg('PAGE message', event.data.payload);
+    addAlert(event.data.payload);
+  }
+});
 
 // Aggressive SW handshake to fetch missed clicks
 function pingSW(times = 8, delay = 400) {
