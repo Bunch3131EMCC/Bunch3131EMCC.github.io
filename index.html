@@ -92,10 +92,12 @@
 
     <!-- Push subscribe card -->
     <div class="card" id="push-card">
-      <div class="row">
-        <button id="btn-subscribe" class="btn">Enable Notifications</button>
-        <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
-      </div>
+     <div class="row">
+  <button id="btn-subscribe" class="btn">Enable Notifications</button>
+  <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
+  <button id="os-reset" class="btn alt">Reset Push</button>
+</div>
+
       <p id="ios-instructions" class="muted" style="margin:10px 0 0">
         iPhone: open from the <em>Home Screen icon</em> (Add to Home Screen) before enabling notifications.
       </p>
@@ -222,6 +224,29 @@
         alert('Init error: ' + (e?.message || e));
       }
     });
+  });
+</script>
+  
+<script>
+  // Reset button for cleaning up duplicate subs
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async (OneSignal) => {
+    const resetBtn = document.getElementById('os-reset');
+    if (resetBtn) {
+      resetBtn.onclick = async () => {
+        try {
+          await OneSignal.User.PushSubscription.optOut();
+          await OneSignal.User.PushSubscription.optIn();
+          await OneSignal.User.addTags({
+            channel: 'pwa',
+            origin: location.origin
+          });
+          alert('Push reset: now subscribed only in this PWA context.');
+        } catch (e) {
+          alert('Reset error: ' + (e?.message || e));
+        }
+      };
+    }
   });
 </script>
 
