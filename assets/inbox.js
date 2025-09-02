@@ -19,9 +19,10 @@ function normalizeEvent(evtOrPayload) {
   return { title, body, url, at };
 }
 function addAlert(evtOrPayload) {
-  const a = normalizeEvent(evtOrPayload);
-  if (!a.title && !a.body) return;
-  const list = loadAlerts();
++   const a = normalizeEvent(evtOrPayload);
++   // If iOS gives us no text, still log the open
++   if (!a.title && !a.body) a.title = 'Notification opened';
++   const list = loadAlerts();
   const twoMin = 2 * 60 * 1000;
   if (!list.some(x => Math.abs((x.at || 0) - a.at) < twoMin && x.title === a.title && x.body === a.body)) {
     list.unshift(a);
