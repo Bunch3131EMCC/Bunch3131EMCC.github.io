@@ -143,7 +143,21 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
     OneSignal.Notifications.addEventListener('click', (evt) => { dbg('OS click', evt); addAlert(evt); });
-    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => { dbg('OS fg', evt); addAlert(evt); });
+   OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+  try {
+    dbg('OS fg', evt);
+    // 1) Log it
+    addAlert(evt);
+    // 2) Take control on iOS (prevents the SDK’s default path)
+    //    then show the toast ourselves so the user still sees it
+    if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+    const n = evt?.notification;
+    if (n && typeof n.display === 'function') n.display();
+  } catch (e) {
+    dbg('OS fg error', e);
+  }
+});
+
   } catch (e) { dbg('OS listeners error', e); }
 });
 
