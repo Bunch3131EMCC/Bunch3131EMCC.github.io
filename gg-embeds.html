@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pheasant Invitational — Embeds</title>
+<meta name="theme-color" content="#0f172a" />
+<style>
+  :root { --bg:#0b1220; --card:#0f1420; --fg:#e5e7eb; --muted:#9aa3af; --accent:#2563eb; --border:#1f2937; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .topbar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:10px 12px}
+  .back{background:none;border:0;color:#fff;font-size:20px;line-height:1;cursor:pointer}
+  .title{font-weight:800}
+  .tabs{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg)}
+  .tab{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#111827;color:#e5e7eb;cursor:pointer;font-weight:600}
+  .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .wrap{padding:12px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-height:60vh}
+  .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap}
+  .hint{color:var(--muted);font-size:12px}
+  .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:#111827;color:#e5e7eb;text-decoration:none;font-weight:600}
+  .btn:hover{opacity:.9}
+  .iframe-fluid{position:relative;width:100%;min-height:70vh}
+  .iframe-fluid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <button class="back" onclick="goBack()">←</button>
+    <div class="title">Pheasant Invitational</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist" aria-label="Golf Genius Embeds">
+    <button class="tab" role="tab" id="tab-leaderboards" aria-controls="panel-leaderboards" aria-selected="true" onclick="activate('leaderboards')">Leaderboards</button>
+    <button class="tab" role="tab" id="tab-playerstats" aria-controls="panel-playerstats" aria-selected="false" onclick="activate('playerstats')">Player Stats</button>
+    <button class="tab" role="tab" id="tab-teesheets" aria-controls="panel-teesheets" aria-selected="false" onclick="activate('teesheets')">Tee Sheets</button>
+  </div>
+
+  <div class="wrap">
+    <!-- Panels -->
+    <section id="panel-leaderboards" role="tabpanel" aria-labelledby="tab-leaderboards" class="card"></section>
+    <section id="panel-playerstats" role="tabpanel" aria-labelledby="tab-playerstats" class="card" hidden></section>
+    <section id="panel-teesheets" role="tabpanel" aria-labelledby="tab-teesheets" class="card" hidden></section>
+  </div>
+
+<script>
+  function goBack(){ location.href = "index.html"; }
+
+  const external = {
+    leaderboards: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/customized_tournament_results?page_id=11881230128635723207&no_player_profile=true&no_print_button=true",
+    playerstats:  "https://www.golfgenius.com/leagues/11881229955629071492/widgets/player_stats?page_id=11881230129642356168",
+    teesheets:    "https://www.golfgenius.com/leagues/11881229955629071492/widgets/next_round?page_id=11881230126622457285"
+  };
+
+  const mounted = new Set();
+
+  function mountEmbed(key, panelId){
+    if (mounted.has(key)) return;
+    const panel = document.getElementById(panelId);
+
+    panel.innerHTML = `
+      <div class="row">
+        <div class="hint">If the widget seems slow or blocked, open it directly.</div>
+        <a class="btn" target="_blank" rel="noopener" href="${external[key]}">Open in Golf Genius ↗</a>
+      </div>
+    ` + makeIframe(key);
+
+    mounted.add(key);
+  }
+
+  function makeIframe(key){
+    switch(key){
+      case 'leaderboards':
+        return `
+          <div class="iframe-fluid">
+            <iframe
+              src="${external.leaderboards}"
+              frameborder="0"
+              scrolling="auto"
+              allowfullscreen
+            ></iframe>
+          </div>
+        `;
+      case 'playerstats':
+        return `
+          <div class="iframe-fluid">
+            <iframe
+              src="${external.playerstats}"
+              frameborder="0"
+              scrolling="auto"
+              allowfullscreen
+            ></iframe>
+          </div>
+        `;
+      case 'teesheets':
+        return `
+          <div class="iframe-fluid">
+            <iframe
+              src="${external.teesheets}"
+              frameborder="0"
+              scrolling="auto"
+              allowfullscreen
+            ></iframe>
+          </div>
+        `;
+    }
+  }
+
+  function activate(key){
+    const tabs = document.querySelectorAll('.tab[role="tab"]');
+    const panels = document.querySelectorAll('[role="tabpanel"]');
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.id === 'tab-' + key)));
+    panels.forEach(p => p.hidden = (p.id !== 'panel-' + key));
+    mountEmbed(key, 'panel-' + key);
+    try{ localStorage.setItem('gg_tab', key); }catch(_){}
+  }
+
+  (function(){
+    const last = (localStorage.getItem('gg_tab') || 'leaderboards');
+    activate(last);
+  })();
+</script>
+</body>
+</html>
