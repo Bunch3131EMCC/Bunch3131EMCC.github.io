@@ -127,7 +127,7 @@
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js?v=6"></script>
 
- <!-- OneSignal init + UI logic (guarded) -->
+<!-- OneSignal init + UI logic (guarded) -->
 <script>
   // Prevent double init if the page re-renders or scripts run twice
   window.__OS_INITED__ = window.__OS_INITED__ || false;
@@ -174,23 +174,59 @@
     window.OneSignalDeferred.push(async function (OneSignal) {
       try {
         await OneSignal.init({
-  appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
-  serviceWorkerPath: '/OneSignalSDKWorker.js',
-  serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js', // <-- add this line
-  // (optional) scope if you want: serviceWorkerParam: { scope: '/' }
-});
+          appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+          serviceWorkerPath: '/OneSignalSDKWorker.js',
+          serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
+        });
 
+        // Tag the context once (helps you target only the PWA)
+        try {
+          await OneSignal.User.addTags({
+            channel: (window.matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'browser'),
+            origin: location.origin
+          });
+        } catch {}
+
+        // ---- PAGE BRIDGE: normalize and forward events into the page
+        const forwardToInbox = (evt) => {
+          try {
+            const n = evt?.notification || {};
+            const payload = {
+              title: n.title || '',
+              body:  n.body  || '',
+              data:  n.data  || {},
+              at: Date.now()
+            };
+            window.postMessage({ channel: 'pheasant-inbox', payload }, '*');
+          } catch {}
+        };
 
         // Prevent wiring listeners twice if something re-calls this block
         if (!window.__OS_LISTENERS__) {
           window.__OS_LISTENERS__ = true;
 
+          // Keep your UI listeners
           OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
           OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
 
+          // Foreground path: take control on iOS, then display manually so banner still shows
+          OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+            try {
+              forwardToInbox(evt);                 // <-- send to inbox.js
+              if (evt?.preventDefault) evt.preventDefault();
+              const n = evt?.notification;
+              if (n?.display) n.display();
+            } catch {}
+          });
+
+          // Click path: when a notif is tapped while app is open
+          OneSignal.Notifications.addEventListener('click', (evt) => {
+            try { forwardToInbox(evt); } catch {}
+          });
+
+          // Buttons
           const subBtn  = document.getElementById('btn-subscribe');
           const diagBtn = document.getElementById('btn-diagnostics');
-
           if (subBtn) {
             subBtn.onclick = async () => {
               try {
@@ -205,7 +241,6 @@
               }
             };
           }
-
           if (diagBtn) {
             diagBtn.onclick = async () => {
               const supported = OneSignal.Notifications.isPushSupported();
@@ -227,29 +262,6 @@
         alert('Init error: ' + (e?.message || e));
       }
     });
-  });
-</script>
-  
-<script>
-  // Reset button for cleaning up duplicate subs
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(async (OneSignal) => {
-    const resetBtn = document.getElementById('os-reset');
-    if (resetBtn) {
-      resetBtn.onclick = async () => {
-        try {
-          await OneSignal.User.PushSubscription.optOut();
-          await OneSignal.User.PushSubscription.optIn();
-          await OneSignal.User.addTags({
-            channel: 'pwa',
-            origin: location.origin
-          });
-          alert('Push reset: now subscribed only in this PWA context.');
-        } catch (e) {
-          alert('Reset error: ' + (e?.message || e));
-        }
-      };
-    }
   });
 </script>
 
