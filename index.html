@@ -36,8 +36,18 @@
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
     .wrap{max-width:860px;margin:0 auto;padding:24px}
     header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-    .logo{width:72px;height:72px;border-radius:14px;border:1px solid var(--border);overflow:hidden;display:grid;place-items:center;background:#fff}
-    .logo img{width:100%;height:100%;object-fit:contain}
+   .logo {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.logo img {
+  width:48px;   /* adjust size if you want it bigger (e.g. 60px) */
+  height:48px;
+  border-radius:12px;  /* optional, keeps slightly rounded corners */
+}
+
     h1{margin:0;font-size:28px;font-weight:800}
     .muted{color:var(--muted)}
     .card{border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;background:#fff}
