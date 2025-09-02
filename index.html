@@ -95,6 +95,13 @@
   <div class="row">
     <button id="btn-subscribe" class="btn">Enable Notifications</button>
     <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
+    <!-- TEMP DEBUG BUTTONS (remove later) -->
+<div class="row" style="margin-top:8px;">
+  <button id="dbg-page-msg" class="btn alt">Test Page → Inbox</button>
+  <button id="dbg-sw-msg" class="btn alt">Test SW → Inbox</button>
+  <button id="dbg-os-fg" class="btn alt">Simulate OS Foreground</button>
+</div>
+
   </div> <!-- <-- close the .row BEFORE the text below -->
 
   <p id="ios-instructions" class="muted" style="margin:10px 0 0">
@@ -129,6 +136,8 @@
 
 <!-- OneSignal init + UI logic (guarded) -->
 <script>
+
+  
   // Prevent double init if the page re-renders or scripts run twice
   window.__OS_INITED__ = window.__OS_INITED__ || false;
 
@@ -265,6 +274,39 @@
   });
 </script>
 
+<script>
+  // Page → Inbox test (should add a new row in Recent Alerts instantly)
+  document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
+    window.postMessage({
+      channel: 'pheasant-inbox',
+      payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
+    }, '*');
+  });
+
+  // SW → Inbox test (should add a new row if SW listener & inbox.js SW handler are alive)
+  document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
+    if (!('serviceWorker' in navigator)) return alert('No SW');
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      reg?.active?.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG SW→Inbox', body: 'manual SW postMessage', at: Date.now() }
+      });
+    } catch (e) { alert('SW post error: ' + (e?.message || e)); }
+  });
+
+  // Simulate the OneSignal foreground event (uses the same forwardToInbox path)
+  document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
+    const fakeEvt = { notification: { title: 'DBG OS fg', body: 'simulated foreground', data: {} } };
+    // Same shape your forwardToInbox expects
+    window.postMessage({ channel: 'pheasant-inbox', payload: {
+      title: fakeEvt.notification.title,
+      body: fakeEvt.notification.body,
+      data: fakeEvt.notification.data,
+      at: Date.now()
+    }}, '*');
+  });
+</script>
 
   <!-- Inbox (v11) -->
   <script type="module" src="assets/inbox.js?v=13"></script>
