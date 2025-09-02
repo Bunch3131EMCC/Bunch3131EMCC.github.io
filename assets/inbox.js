@@ -1,4 +1,6 @@
-// /assets/inbox.js  (v10 final)
+// /assets/inbox.js  (v10 fixed)
+// NOTE: previous copy had an extra stray "}" after addAlert() that broke the module.
+
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 // Optional on-page debug (use ?debug=1)
@@ -15,8 +17,13 @@ function dbg(...args) {
 }
 
 // Storage helpers
-function loadAlerts() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
-function saveAlerts(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100))); }
+function loadAlerts() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveAlerts(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
+}
 
 // Normalize + add
 function normalizeEvent(evtOrPayload) {
@@ -29,21 +36,27 @@ function normalizeEvent(evtOrPayload) {
   const at    = e.at || Date.now();
   return { title, body, url, at };
 }
+
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
   if (!a.title && !a.body) a.title = 'Notification opened';
 
   const now = Date.now();
+
   // session-level quick dedupe
   window.__pheasantSeen = window.__pheasantSeen || [];
   // consider alerts same if titles match and within 30s, ignoring empty vs non-empty body
-  const sameTitleRecent = window.__pheasantSeen.find(x => x.title === (a.title || '') && (now - x.t) < 30000);
+  const sameTitleRecent = window.__pheasantSeen.find(
+    x => x.title === (a.title || '') && (now - x.t) < 30000
+  );
 
   const list = loadAlerts();
   const twoMin = 2 * 60 * 1000;
 
   // find a recent stored item with same title within 2 min
-  const idx = list.findIndex(x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || ''));
+  const idx = list.findIndex(
+    x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || '')
+  );
 
   if (idx >= 0) {
     // prefer richer body: if new has body and old doesn't (or shorter), replace old
@@ -71,8 +84,6 @@ function addAlert(evtOrPayload) {
   renderInboxPage('inbox');
 
   window.__pheasantSeen.push({ title: a.title || '', t: now });
-}
-
 }
 
 // Renderers
