@@ -1,30 +1,27 @@
-// /assets/inbox.js  (v9)
+// /assets/inbox.js  (v10 final)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
-// --- optional on-page debug: add ?debug=1 to your URL
+// Optional on-page debug (use ?debug=1)
 const DEBUG_ON = new URLSearchParams(location.search).get('debug') === '1';
 function dbg(...args) {
   if (!DEBUG_ON) return;
   console.log('[inbox]', ...args);
   try {
     const el = document.getElementById('inbox-debug');
-    if (el) el.innerHTML += `<div style="padding:2px 0;border-top:1px solid #eee"><code>${args.map(a => typeof a==='string' ? a : JSON.stringify(a)).join(' ')}</code></div>`;
+    if (el) el.innerHTML += `<div style="padding:2px 0;border-top:1px solid #eee"><code>${
+      args.map(a => typeof a==='string' ? a : JSON.stringify(a)).join(' ')
+    }</code></div>`;
   } catch {}
 }
 
-// ----- storage helpers -----
-function loadAlerts() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
-}
-function saveAlerts(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
-}
+// Storage helpers
+function loadAlerts() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
+function saveAlerts(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100))); }
 
-// ----- normalize + add -----
+// Normalize + add
 function normalizeEvent(evtOrPayload) {
   const e = evtOrPayload || {};
-  const n = e.notification || e; // OneSignal event OR SW payload
+  const n = e.notification || e;
   const data = n.data || e.additionalData || {};
   const title = n.title || e.title || data.title || '';
   const body  = n.body  || e.body  || data.alert || data.body || '';
@@ -32,10 +29,9 @@ function normalizeEvent(evtOrPayload) {
   const at    = e.at || Date.now();
   return { title, body, url, at };
 }
-
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
-  // iOS can give no text — still log so the user sees that something arrived
+  // iOS may send empty payloads — still log so user sees the open
   if (!a.title && !a.body) a.title = 'Notification opened';
 
   const list = loadAlerts();
@@ -52,7 +48,7 @@ function addAlert(evtOrPayload) {
   }
 }
 
-// ----- renderers -----
+// Renderers
 export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
   const el = document.getElementById(mountId);
   if (!el) return;
@@ -104,7 +100,7 @@ export function renderInboxPage(mountId = 'inbox') {
       `).join('');
 }
 
-// ----- OneSignal page events (fires while app is open) -----
+// OneSignal page events (fires while app is open)
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
@@ -113,7 +109,7 @@ window.OneSignalDeferred.push(function (OneSignal) {
   } catch (e) { dbg('OS listeners error', e); }
 });
 
-// ----- SW messages (tap from closed) -----
+// SW messages (tap from closed)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
@@ -123,7 +119,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ----- Aggressive SW handshake to fetch missed clicks -----
+// Aggressive SW handshake to fetch missed clicks
 function pingSW(times = 8, delay = 400) {
   if (!('serviceWorker' in navigator)) return;
   let count = 0;
