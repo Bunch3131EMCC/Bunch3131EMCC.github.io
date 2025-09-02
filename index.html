@@ -283,17 +283,21 @@
     }, '*');
   });
 
-  // SW → Inbox test (should add a new row if SW listener & inbox.js SW handler are alive)
+ 
+  // SW → Inbox test (use the channels the SW handles)
   document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
     if (!('serviceWorker' in navigator)) return alert('No SW');
     try {
       const reg = await navigator.serviceWorker.ready;
-      reg?.active?.postMessage({
-        channel: 'pheasant-inbox',
-        payload: { title: 'DBG SW→Inbox', body: 'manual SW postMessage', at: Date.now() }
-      });
-    } catch (e) { alert('SW post error: ' + (e?.message || e)); }
+      reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
+      reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
+      alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
+    } catch (e) {
+      alert('SW post error: ' + (e?.message || e));
+    }
   });
+
+
 
   // Simulate the OneSignal foreground event (uses the same forwardToInbox path)
   document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
