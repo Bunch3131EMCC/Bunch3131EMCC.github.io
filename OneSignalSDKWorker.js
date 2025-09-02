@@ -1,11 +1,11 @@
-// /OneSignalSDKWorker.js  (v5)
+// /OneSignalSDKWorker.js  (v6 final)
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-// Make sure the new SW takes control ASAP
-self.addEventListener('install', (e) => { self.skipWaiting(); });
-self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
+// Take control ASAP so the page gets controlled
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
-// --- Persist clicked notifications so the page can read them later ---
+// ---- Persist clicked notifications so the page can read them later ----
 const DB_NAME = 'pheasant-inbox';
 const STORE   = 'clicks';
 
@@ -41,7 +41,7 @@ async function getAllAndClear() {
   });
 }
 
-// Best-effort: also post to any open client
+// Also try to post to any open client (best effort)
 async function postToAnyClient(payload, maxMs = 15000) {
   const start = Date.now();
   while (Date.now() - start < maxMs) {
@@ -78,7 +78,7 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 
-// Page can fetch the last-click (recent) and drain the queue
+// Page can fetch the last (recent) click and drain queued clicks
 self.addEventListener('message', (event) => {
   const msg = event?.data;
   if (!msg) return;
@@ -89,8 +89,8 @@ self.addEventListener('message', (event) => {
   } else if (msg.channel === 'pheasant-inbox-fetch') {
     (async () => {
       const items = await getAllAndClear();
-      if (items.length) {
-        for (const rec of items) event.source?.postMessage({ channel: 'pheasant-inbox', payload: rec.payload });
+      for (const rec of items) {
+        try { event.source?.postMessage({ channel: 'pheasant-inbox', payload: rec.payload }); } catch {}
       }
     })();
   }
