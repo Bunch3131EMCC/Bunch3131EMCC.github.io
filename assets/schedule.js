@@ -28,40 +28,36 @@ async function renderScheduleSummary(mountId, jsonUrl) {
 
   // helper to flatten events with absolute times
   function flatten(day) {
-    return day.events
-      .map(ev => ({ ...ev, dt: toDate(data.timezone, day.date, ev.time), day }))
-      .sort((a, b) => a.dt - b.dt);
+    return day.events.map(ev => ({
+      ...ev,
+      dt: toDate(data.timezone, day.date, ev.time),
+      day
+    })).sort((a, b) => a.dt - b.dt);
   }
 
-  // Smaller header than before
-  let html = `<h4 style="margin:0 0 8px 0;font-size:16px;font-weight:700;">Today</h4>`;
+  // Match other card titles (18px, bold)
+  let html = `<h3 style="margin:0 0 8px 0;font-size:18px;font-weight:700;">Today</h3>`;
 
   if (today) {
-    const evs      = flatten(today);
-    const upcoming = evs.filter(e => e.dt > now);
-    const upNext   = upcoming[0];
+    const evs       = flatten(today);
+    const upcoming  = evs.filter(e => e.dt > now);
+    const upNext    = upcoming[0];
     const remaining = upcoming.slice(0, 4);
 
     html += `<div class="card" style="margin:8px 0;">
       <div style="font-size:14px;font-weight:700;">${today.label}</div>
-      ${
-        upNext
-          ? `<div class="muted" style="margin-top:6px;font-size:12px;">Up Next · ${upNext.time} — ${upNext.title}</div>`
-          : `<div class="muted" style="margin-top:6px;font-size:12px;">All scheduled items for today are complete.</div>`
-      }
-      ${
-        remaining.length
-          ? `<ul style="margin:10px 0 0 18px;font-size:14px;line-height:1.3;">${remaining
-              .map(e => `<li><strong>${e.time}</strong> ${e.title}</li>`)
-              .join("")}</ul>`
-          : ""
-      }
+      ${upNext
+        ? `<div class="muted" style="margin-top:6px;font-size:12px;">Up Next · ${upNext.time} — ${upNext.title}</div>`
+        : `<div class="muted" style="margin-top:6px;font-size:12px;">All scheduled items for today are complete.</div>`}
+      ${remaining.length ? `<ul style="margin:10px 0 0 18px;font-size:14px;line-height:1.3;">${
+        remaining.map(e => `<li><strong>${e.time}</strong> ${e.title}</li>`).join('')
+      }</ul>` : ''}
       <div style="margin-top:10px;">
         <a class="pill" href="schedule.html">View Full Schedule</a>
       </div>
     </div>`;
   } else {
-    // not during event dates: show next day
+    // if not during event dates, show the next day
     const futureDay = days.find(d => toDate(data.timezone, d.date, "00:00") > now);
     if (futureDay && futureDay.events && futureDay.events.length) {
       const first = futureDay.events[0];
@@ -85,13 +81,11 @@ async function renderScheduleSummary(mountId, jsonUrl) {
 async function renderFullSchedule(mountId, jsonUrl) {
   const el = document.getElementById(mountId);
   if (!el) return;
-
   const data = await fetchSchedule(jsonUrl);
   const now  = new Date();
 
-  let out = "";
+  let out = '';
   (data.days || []).forEach(day => {
-    // Use smaller heading (h4) with reduced size/spacing
     out += `<section class="card" style="margin-top:12px;">
       <h4 style="margin:6px 0 4px 0;font-size:16px;font-weight:700;">${day.label}</h4>
       <ul style="list-style:none;padding:0;margin:0;">`;
@@ -100,7 +94,6 @@ async function renderFullSchedule(mountId, jsonUrl) {
       const dt       = toDate(data.timezone, day.date, ev.time);
       const isPast   = dt < now;
       const isNowish = Math.abs(dt - now) < 30 * 60 * 1000; // 30min window
-
       out += `<li style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid #e5e7eb;">
         <div style="width:72px;font-weight:600;font-size:14px;">${ev.time}</div>
         <div style="flex:1;">
