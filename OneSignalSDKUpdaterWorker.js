@@ -1,51 +1,48 @@
-// /OneSignalSDKUpdaterWorker.js  (root scope)
+// /OneSignalSDKUpdaterWorker.js
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-/**
- * Forward notification clicks into any open client pages.
- * Your /assets/inbox.js listens for this and logs the alert.
- */
-self.addEventListener('notificationclick', (event) => {
-  // event.notification has title/body/data etc.
-  const payload = {
-    title: event.notification?.title,
-    body: event.notification?.body,
-    data: event.notification?.data || {},
-    at: Date.now()
-  };
+async function broadcast(msg) {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  for (const c of clients) c.postMessage(msg);
+}
 
-  // Broadcast to all controlled windows (even if not focused)
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clients) => {
-        clients.forEach((client) => {
-          client.postMessage({ channel: 'pheasant-inbox', payload });
-        });
-      })
-  );
+// prove it’s alive (you’ll see “SW installed/activated” in Recent Alerts with ?debug=1)
+self.addEventListener('install', (event) => {
+  event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload: { title: 'SW installed', at: Date.now() } }));
+});
+self.addEventListener('activate', (event) => {
+  event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload: { title: 'SW activated', at: Date.now() } }));
 });
 
-/**
- * (Optional) If you want foreground-ish logs too, you can also try to
- * broadcast on 'push' so the page hears about the inbound payload even
- * before click. Not all platforms deliver full payload here, but harmless to keep.
- */
+// reply to pings your page sends
+self.addEventListener('message', (event) => {
+  const ch = event?.data?.channel;
+  if (ch === 'pheasant-inbox-hello' || ch === 'pheasant-inbox-fetch') {
+    event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload: { title: 'SW pong', body: ch, at: Date.now() } }));
+  }
+});
+
+// forward clicks into the page (iOS critical)
+self.addEventListener('notificationclick', (event) => {
+  const payload = {
+    title: event.notification?.title || 'Notification',
+    body:  event.notification?.body  || '',
+    data:  event.notification?.data  || {},
+    at: Date.now()
+  };
+  event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload }));
+});
+
+// optional: try to forward raw push payloads too
 self.addEventListener('push', (event) => {
   try {
-    const data = event.data ? event.data.json?.() ?? {} : {};
+    const data = event.data ? (event.data.json?.() ?? {}) : {};
     const payload = {
       title: data.title || '',
-      body: data.body || data.alert || '',
+      body:  data.body  || data.alert || '',
       data,
       at: Date.now()
     };
-    event.waitUntil(
-      self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then((clients) => {
-          clients.forEach((client) => {
-            client.postMessage({ channel: 'pheasant-inbox', payload });
-          });
-        })
-    );
-  } catch (_) { /* ignore */ }
+    event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload }));
+  } catch(_) {}
 });
