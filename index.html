@@ -206,6 +206,21 @@
   });
 </script>
 
+<div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
+<script>
+(async () => {
+  const el = document.getElementById('sw-status');
+  if (!el || !('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const ctrl = !!navigator.serviceWorker.controller;
+    const url  = reg?.active?.scriptURL || '(none)';
+    el.textContent = `SW controlled=${ctrl} • script=${url}`;
+  } catch {
+    el.textContent = 'SW controlled=false • script=(none)';
+  }
+})();
+</script>
 
 
 </body>
