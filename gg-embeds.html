@@ -11,9 +11,11 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  .topbar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:10px 12px}
+  .topbar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 12px}
   .back{background:none;border:0;color:#111827;font-size:20px;line-height:1;cursor:pointer}
-  .title{font-weight:800}
+  .logo{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);overflow:hidden;display:grid;place-items:center;background:#fff}
+  .logo img{width:100%;height:100%;object-fit:contain}
+  .title{font-weight:800;font-size:16px}
   .tabs{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg)}
   .tab{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#f8fafc;color:#0f172a;cursor:pointer;font-weight:600}
   .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -35,6 +37,7 @@
 
   <div class="topbar">
     <button class="back" onclick="goBack()">←</button>
+    <div class="logo"><img src="assets/icon_60pt@3x.png" alt="Pheasant logo" /></div>
     <div class="title">Pheasant Invitational</div>
   </div>
 
@@ -56,13 +59,10 @@
   // Back to your app’s home
   function goBack(){ location.href = "index.html"; }
 
-  // External widget URLs (used in iframes + pop-out link)
+  // External widget URLs
   const external = {
-    // Matches = Tee Sheets / Next Round
     matches: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/next_round?page_id=11881230126622457285",
-    // Scoring = Leaderboards / Results
     scoring: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/customized_tournament_results?page_id=11881230128635723207&no_player_profile=true&no_print_button=true",
-    // Stats = Player Stats
     stats:   "https://www.golfgenius.com/leagues/11881229955629071492/widgets/player_stats?page_id=11881230129642356168"
   };
 
