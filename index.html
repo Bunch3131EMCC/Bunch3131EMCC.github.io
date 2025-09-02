@@ -67,7 +67,9 @@
 </p>
 
     </div>
-    
+    <!-- Notifications Inbox -->
+    <div class="card" id="recent-alerts" style="margin-top:16px;"></div>
+
 <!-- Schedule summary card (sibling, not nested) -->
 <div class="card" id="schedule-today" style="margin-top:16px;"></div>
 
@@ -179,6 +181,14 @@
         alert('Init error: ' + (e?.message || e));
       }
     });
+  });
+</script>
+  <!-- Notification Inbox Render -->
+<script type="module" defer src="assets/inbox.js?v=1"></script>
+<script type="module">
+  import { renderRecentAlerts } from './assets/inbox.js?v=1';
+  window.addEventListener('DOMContentLoaded', () => {
+    renderRecentAlerts('recent-alerts', 5);
   });
 </script>
 
