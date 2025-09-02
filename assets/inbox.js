@@ -1,4 +1,4 @@
-// /assets/inbox.js  (v5)
+// /assets/inbox.js  (v6)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 function loadAlerts() {
@@ -10,7 +10,7 @@ function saveAlerts(list) {
 }
 function normalizeEvent(evtOrPayload) {
   const e = evtOrPayload || {};
-  const n = e.notification || e;              // OneSignal event or SW payload
+  const n = e.notification || e;              // OneSignal event OR SW payload
   const data = n.data || e.additionalData || {};
   const title = n.title || e.title || data.title || 'Pheasant Alert';
   const body  = n.body  || e.body  || data.alert || data.body || '';
@@ -26,7 +26,6 @@ function addAlert(evtOrPayload) {
   if (!list.some(x => Math.abs((x.at || 0) - a.at) < twoMin && x.title === a.title && x.body === a.body)) {
     list.unshift(a);
     saveAlerts(list);
-    // update both views if they exist
     renderRecentAlerts('recent-alerts', 5);
     renderInboxPage('inbox');
   }
@@ -35,7 +34,6 @@ function addAlert(evtOrPayload) {
 export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
   const el = document.getElementById(mountId);
   if (!el) return;
-
   const list = loadAlerts().slice(0, max);
   const body = !list.length
     ? `<div class="muted">No recent alerts yet.</div>`
@@ -50,7 +48,6 @@ export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
           </li>`;
         }).join('')}
       </ul>`;
-
   el.innerHTML = `
     <h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
     ${body}
@@ -59,7 +56,6 @@ export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
       <button id="clear-inbox" class="btn alt" style="margin-left:8px;padding:6px 10px;font-size:14px;">Clear</button>
     </div>
   `;
-
   document.getElementById('clear-inbox')?.addEventListener('click', () => {
     saveAlerts([]);
     renderRecentAlerts(mountId, max);
@@ -83,7 +79,7 @@ export function renderInboxPage(mountId = 'inbox') {
       `).join('');
 }
 
-// Page events (fires when app is open)
+// ---- OneSignal page events (fires when app is open) ----
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
@@ -92,24 +88,42 @@ window.OneSignalDeferred.push(function (OneSignal) {
   } catch {}
 });
 
-// SW messages + drain on load (captures taps from closed state)
+// ---- SW messages from our bridge ----
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
       addAlert(event.data.payload);
     }
   });
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
-      reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
-    } catch {}
-  });
 }
 
-// Initial render on pages that include a container
+// ---- Aggressive handshake with the SW to fetch any missed clicks ----
+function pingSW(times = 8, delay = 400) {
+  if (!('serviceWorker' in navigator)) return;
+  let count = 0;
+  const send = () => {
+    navigator.serviceWorker.ready
+      .then(reg => {
+        reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
+        reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
+      })
+      .catch(() => {});
+    if (++count < times) setTimeout(send, delay);
+  };
+  send();
+}
+
+// Initial render + early ping
 document.addEventListener('DOMContentLoaded', () => {
   renderRecentAlerts('recent-alerts', 5);
   renderInboxPage('inbox');
+  pingSW(8, 400); // start ASAP after DOM is ready
+});
+
+// Ping again on load (in case SW becomes active slightly later)
+window.addEventListener('load', () => { pingSW(5, 600); });
+
+// And whenever the page becomes visible after a push open
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') pingSW(4, 500);
 });
