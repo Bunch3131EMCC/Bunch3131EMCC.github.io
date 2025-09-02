@@ -8,7 +8,7 @@ function toDate(tz, ymd, hm) {
 }
 
 async function fetchSchedule(url) {
-  const res = await fetch(url + (url.includes("?") ? "&" : "?") + "v=5");
+  const res = await fetch(url + (url.includes("?") ? "&" : "?") + "v=6");
   if (!res.ok) throw new Error("schedule.json fetch failed");
   return res.json();
 }
@@ -35,8 +35,8 @@ async function renderScheduleSummary(mountId, jsonUrl) {
     })).sort((a, b) => a.dt - b.dt);
   }
 
-  // Match other card titles (18px, bold)
-  let html = `<h3 style="margin:0 0 8px 0;font-size:18px;font-weight:700;">Today</h3>`;
+  // Use a dedicated class instead of inline styles
+  let html = `<h3 class="sched-heading">Today</h3>`;
 
   if (today) {
     const evs       = flatten(today);
@@ -57,7 +57,6 @@ async function renderScheduleSummary(mountId, jsonUrl) {
       </div>
     </div>`;
   } else {
-    // if not during event dates, show the next day
     const futureDay = days.find(d => toDate(data.timezone, d.date, "00:00") > now);
     if (futureDay && futureDay.events && futureDay.events.length) {
       const first = futureDay.events[0];
@@ -93,7 +92,8 @@ async function renderFullSchedule(mountId, jsonUrl) {
     (day.events || []).forEach(ev => {
       const dt       = toDate(data.timezone, day.date, ev.time);
       const isPast   = dt < now;
-      const isNowish = Math.abs(dt - now) < 30 * 60 * 1000; // 30min window
+      const isNowish = Math.abs(dt - now) < 30 * 60 * 1000;
+
       out += `<li style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid #e5e7eb;">
         <div style="width:72px;font-weight:600;font-size:14px;">${ev.time}</div>
         <div style="flex:1;">
