@@ -20,6 +20,8 @@ async function renderScheduleSummary(mountId, jsonUrl) {
 
   const data = await fetchSchedule(jsonUrl);
   const now  = new Date();
+  let html = `<h3 class="sched-heading">Today</h3>`;
+
 
   // find today's bucket
   const todayYMD = now.toISOString().slice(0, 10);
