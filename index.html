@@ -174,9 +174,12 @@
     window.OneSignalDeferred.push(async function (OneSignal) {
       try {
         await OneSignal.init({
-          appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
-          serviceWorkerPath: '/OneSignalSDKWorker.js'
-        });
+  appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+  serviceWorkerPath: '/OneSignalSDKWorker.js',
+  serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js', // <-- add this line
+  // (optional) scope if you want: serviceWorkerParam: { scope: '/' }
+});
+
 
         // Prevent wiring listeners twice if something re-calls this block
         if (!window.__OS_LISTENERS__) {
