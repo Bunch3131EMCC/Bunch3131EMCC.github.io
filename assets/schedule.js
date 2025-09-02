@@ -36,7 +36,8 @@ async function renderScheduleSummary(mountId, jsonUrl) {
   }
 
   // Match other card titles (18px, bold)
-  let html = `<h3 style="margin:0 0 8px 0;font-size:18px;font-weight:700;">Today</h3>`;
+let html = `<h3 style="margin:0 0 8px 0;font-size:18px;font-weight:800;">Today</h3>`;
+
 
   if (today) {
     const evs       = flatten(today);
