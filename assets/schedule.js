@@ -46,7 +46,7 @@ async function renderScheduleSummary(mountId, jsonUrl) {
         ${remaining.length ? `<ul style="margin:10px 0 0 18px;font-size:14px;line-height:1.3;">${
           remaining.map(e => `<li><strong>${e.time}</strong> ${e.title}</li>`).join('')
         }</ul>` : ''}
-        <div style="margin-top:10px;">
+        <div style="margin-top:16px;">
           <a class="pill" href="schedule.html">View Full Schedule</a>
         </div>
       </div>`;
@@ -57,12 +57,12 @@ async function renderScheduleSummary(mountId, jsonUrl) {
         html += `<div class="card" style="margin:8px 0;">
           <div style="font-size:14px;font-weight:700;">Next: ${futureDay.label}</div>
           <div class="muted" style="margin-top:6px;font-size:12px;">First event · ${first.time} — ${first.title}</div>
-          <div style="margin-top:10px;"><a class="pill" href="schedule.html">View Full Schedule</a></div>
+          <div style="margin-top:16px;"><a class="pill" href="schedule.html">View Full Schedule</a></div>
         </div>`;
       } else {
         html += `<div class="card" style="margin:8px 0;">
           <div class="muted" style="font-size:12px;">No upcoming dates.</div>
-          <div style="margin-top:10px;"><a class="pill" href="schedule.html">View Full Schedule</a></div>
+          <div style="margin-top:16px;"><a class="pill" href="schedule.html">View Full Schedule</a></div>
         </div>`;
       }
     }
