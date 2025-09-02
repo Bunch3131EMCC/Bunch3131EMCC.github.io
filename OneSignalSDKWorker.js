@@ -1,18 +1,25 @@
-// /OneSignalSDKWorker.js
-// Load OneSignal’s v16 service worker
+// /OneSignalSDKWorker.js  (v3)
+// Load OneSignal’s v16 worker first
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-// --- Small bridge so clicks get logged in your app inbox ---
-async function postToAnyClient(payload) {
-  for (let i = 0; i < 12; i++) {
-    const clientsArr = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-    if (clientsArr.length) {
-      for (const c of clientsArr) c.postMessage({ channel: 'pheasant-inbox', payload });
-      return;
+// --- Bridge so clicked notifications get logged in your app ---
+// Keep the last payload in memory for a short time (for late listeners)
+let lastPayload = null;
+let lastAt = 0;
+
+async function postToAnyClient(payload, maxMs = 15000) {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    const arr = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    if (arr.length) {
+      for (const c of arr) c.postMessage({ channel: 'pheasant-inbox', payload });
+      return true;
     }
-    await new Promise(r => setTimeout(r, 250));
+    await new Promise(r => setTimeout(r, 300));
   }
+  return false;
 }
+
 self.addEventListener('notificationclick', (event) => {
   const n = event.notification || {};
   const d = n.data || {};
@@ -24,5 +31,17 @@ self.addEventListener('notificationclick', (event) => {
     url:   d.url   || d.launchURL || d.openURL || '/',
     additionalData: d
   };
-  event.waitUntil(postToAnyClient(payload));
+  lastPayload = payload;
+  lastAt = Date.now();
+  event.waitUntil(postToAnyClient(payload, 15000));
+});
+
+// Page can ping us after it loads to retrieve the last click (if recent)
+self.addEventListener('message', (event) => {
+  const msg = event?.data;
+  if (msg && msg.channel === 'pheasant-inbox-hello') {
+    if (lastPayload && (Date.now() - lastAt) < 2 * 60 * 1000) {
+      event.source?.postMessage({ channel: 'pheasant-inbox', payload: lastPayload });
+    }
+  }
 });
