@@ -1,4 +1,4 @@
-// /assets/inbox.js  (v4)
+// /assets/inbox.js  (v5)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 function loadAlerts() {
@@ -6,7 +6,7 @@ function loadAlerts() {
   catch { return []; }
 }
 function saveAlerts(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
 }
 function normalizeEvent(evtOrPayload) {
   const e = evtOrPayload || {};
@@ -26,7 +26,9 @@ function addAlert(evtOrPayload) {
   if (!list.some(x => Math.abs((x.at || 0) - a.at) < twoMin && x.title === a.title && x.body === a.body)) {
     list.unshift(a);
     saveAlerts(list);
+    // update both views if they exist
     renderRecentAlerts('recent-alerts', 5);
+    renderInboxPage('inbox');
   }
 }
 
@@ -64,6 +66,23 @@ export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
   });
 }
 
+export function renderInboxPage(mountId = 'inbox') {
+  const el = document.getElementById(mountId);
+  if (!el) return;
+  const list = loadAlerts();
+  el.innerHTML = !list.length
+    ? `<div class="muted">No alerts yet.</div>`
+    : list.map(m => `
+        <section class="card" style="margin-top:12px;">
+          <div style="font-weight:700">${m.title}</div>
+          ${m.body ? `<div style="margin-top:6px;">${m.body}</div>` : ``}
+          <div class="muted" style="font-size:12px;margin-top:6px;">
+            ${new Date(m.at).toLocaleString()}
+          </div>
+        </section>
+      `).join('');
+}
+
 // Page events (fires when app is open)
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
@@ -83,14 +102,14 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       const reg = await navigator.serviceWorker.ready;
-      // Ask for a recent click AND drain any queued clicks
       reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
       reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
     } catch {}
   });
 }
 
-// Initial render
+// Initial render on pages that include a container
 document.addEventListener('DOMContentLoaded', () => {
   renderRecentAlerts('recent-alerts', 5);
+  renderInboxPage('inbox');
 });
