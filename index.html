@@ -75,16 +75,26 @@
     <!-- Schedule summary -->
     <div class="card" id="schedule-today" style="margin-top:16px;"></div>
 
-    <!-- Links -->
-    <div class="card">
-      <h3 style="margin:0 0 8px 0;">Links</h3>
-      <div class="grid">
-        <a class="pill" href="#" target="_blank" rel="noopener">Live Scoring (placeholder)</a>
-        <a class="pill" href="#" target="_blank" rel="noopener">Pairings (placeholder)</a>
-        <a class="pill" href="#" target="_blank" rel="noopener">Local Rules (placeholder)</a>
-        <a class="pill" href="#" target="_blank" rel="noopener">Skins (placeholder)</a>
-      </div>
-    </div>
+    <div style="position:fixed; top:0; left:0; right:0; bottom:0; background:#fff; z-index:9999;">
+  <!-- Top bar with back button -->
+  <div style="height:48px; background:#2563eb; display:flex; align-items:center; padding:0 12px; color:#fff; font-size:16px; font-weight:600;">
+    <button onclick="goBackToApp()" style="background:none; border:none; color:#fff; font-size:18px; margin-right:10px; cursor:pointer;">←</button>
+    Pheasant Invitational
+  </div>
+
+  <!-- Fullscreen iframe -->
+  <iframe 
+    src="https://emc-25pheasantinvitational.golfgenius.com" 
+    style="position:absolute; top:48px; left:0; width:100%; height:calc(100% - 48px); border:none;" 
+  ></iframe>
+</div>
+
+<script>
+function goBackToApp() {
+  // Replace this with however your app navigates back
+  window.location.href = "index.html";  
+}
+</script>
 
     <!-- SW status (debug helper) -->
     <div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
