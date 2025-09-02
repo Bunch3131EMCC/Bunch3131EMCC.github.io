@@ -21,6 +21,8 @@
   .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
   .wrap{padding:12px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-height:60vh;display:flex;flex-direction:column}
+  /* Ensure hidden panels are actually hidden across browsers */
+  [hidden]{ display:none !important; }
   /* Fluid iframe wrapper */
   .iframe-fluid{position:relative;width:100%;min-height:70vh;flex:1}
   .iframe-fluid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -43,9 +45,9 @@
 
   <!-- Tabs -->
   <div class="tabs" role="tablist" aria-label="Tournament Hub">
-    <button class="tab" role="tab" id="tab-matches"  aria-controls="panel-matches"  aria-selected="true"  onclick="activate('matches')">Matches</button>
-    <button class="tab" role="tab" id="tab-scoring"  aria-controls="panel-scoring"  aria-selected="false" onclick="activate('scoring')">Scoring</button>
-    <button class="tab" role="tab" id="tab-stats"    aria-controls="panel-stats"    aria-selected="false" onclick="activate('stats')">Stats</button>
+    <button type="button" class="tab" role="tab" id="tab-matches" aria-controls="panel-matches" aria-selected="true">Matches</button>
+    <button type="button" class="tab" role="tab" id="tab-scoring" aria-controls="panel-scoring" aria-selected="false">Scoring</button>
+    <button type="button" class="tab" role="tab" id="tab-stats"   aria-controls="panel-stats"   aria-selected="false">Stats</button>
   </div>
 
   <div class="wrap">
@@ -56,10 +58,8 @@
   </div>
 
 <script>
-  // Back to your app’s home
   function goBack(){ location.href = "index.html"; }
 
-  // External widget URLs
   const external = {
     matches: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/next_round?page_id=11881230126622457285",
     scoring: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/customized_tournament_results?page_id=11881230128635723207&no_player_profile=true&no_print_button=true",
@@ -71,6 +71,7 @@
   function mountEmbed(key, panelId){
     if (mounted.has(key)) return;
     const panel = document.getElementById(panelId);
+    if (!panel) return;
 
     panel.innerHTML = `
       <div class="iframe-fluid">
@@ -89,20 +90,36 @@
     mounted.add(key);
   }
 
-  function activate(key){
+  function selectTab(key){
     const tabs = document.querySelectorAll('.tab[role="tab"]');
     const panels = document.querySelectorAll('[role="tabpanel"]');
-    tabs.forEach(t => t.setAttribute('aria-selected', String(t.id === 'tab-' + key)));
-    panels.forEach(p => p.hidden = (p.id !== 'panel-' + key));
+
+    tabs.forEach(t => {
+      const isActive = t.id === 'tab-' + key;
+      t.setAttribute('aria-selected', String(isActive));
+    });
+
+    panels.forEach(p => {
+      const shouldShow = p.id === 'panel-' + key;
+      if (shouldShow) p.removeAttribute('hidden'); else p.setAttribute('hidden', '');
+    });
+
     mountEmbed(key, 'panel-' + key);
+
     try{ localStorage.setItem('gg_tab', key); }catch(_){}
   }
 
-  // Default to Matches; restore last tab if present
-  (function(){
+  // Robust init: attach listeners after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wire tab clicks
+    document.getElementById('tab-matches').addEventListener('click', () => selectTab('matches'));
+    document.getElementById('tab-scoring').addEventListener('click', () => selectTab('scoring'));
+    document.getElementById('tab-stats').addEventListener('click',   () => selectTab('stats'));
+
+    // Default/restore
     const last = (localStorage.getItem('gg_tab') || 'matches');
-    activate(last);
-  })();
+    selectTab(last);
+  });
 </script>
 </body>
 </html>
