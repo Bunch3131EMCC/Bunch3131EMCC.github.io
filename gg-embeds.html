@@ -18,14 +18,17 @@
   .tab{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#f8fafc;color:#0f172a;cursor:pointer;font-weight:600}
   .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
   .wrap{padding:12px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-height:60vh}
-  .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap}
-  .hint{color:var(--muted);font-size:12px}
-  .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:#111827;color:#fff;text-decoration:none;font-weight:600}
-  .btn:hover{opacity:.92}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-height:60vh;display:flex;flex-direction:column}
   /* Fluid iframe wrapper */
-  .iframe-fluid{position:relative;width:100%;min-height:70vh}
+  .iframe-fluid{position:relative;width:100%;min-height:70vh;flex:1}
   .iframe-fluid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  /* Small footer link */
+  .panel-footer{margin-top:12px;text-align:right}
+  .btn-small{
+    font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);
+    background:#f1f5f9;color:#0f172a;text-decoration:none;font-weight:500
+  }
+  .btn-small:hover{background:#e2e8f0}
 </style>
 </head>
 <body>
@@ -53,7 +56,7 @@
   // Back to your app’s home
   function goBack(){ location.href = "index.html"; }
 
-  // External widget URLs (unchanged — used for the pop-out button too)
+  // External widget URLs (used in iframes + pop-out link)
   const external = {
     // Matches = Tee Sheets / Next Round
     matches: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/next_round?page_id=11881230126622457285",
@@ -70,10 +73,6 @@
     const panel = document.getElementById(panelId);
 
     panel.innerHTML = `
-      <div class="row">
-        <div class="hint">If the widget seems slow or blocked, open it directly.</div>
-        <a class="btn" target="_blank" rel="noopener" href="${external[key]}">Open in Golf Genius ↗</a>
-      </div>
       <div class="iframe-fluid">
         <iframe
           src="${external[key]}"
@@ -81,6 +80,9 @@
           scrolling="auto"
           allowfullscreen
         ></iframe>
+      </div>
+      <div class="panel-footer">
+        <a class="btn-small" target="_blank" rel="noopener" href="${external[key]}">Open in Golf Genius ↗</a>
       </div>
     `;
 
