@@ -1,5 +1,9 @@
-// /OneSignalSDKWorker.js  (v4)
+// /OneSignalSDKWorker.js  (v5)
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
+
+// Make sure the new SW takes control ASAP
+self.addEventListener('install', (e) => { self.skipWaiting(); });
+self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
 
 // --- Persist clicked notifications so the page can read them later ---
 const DB_NAME = 'pheasant-inbox';
@@ -27,17 +31,17 @@ async function getAllAndClear() {
   return await new Promise((res, rej) => {
     const tx = db.transaction(STORE, 'readwrite');
     const st = tx.objectStore(STORE);
-    const getAll = st.getAll();
-    getAll.onsuccess = () => {
-      const out = getAll.result || [];
+    const req = st.getAll();
+    req.onsuccess = () => {
+      const out = req.result || [];
       st.clear();
       tx.oncomplete = () => res(out);
     };
-    getAll.onerror = () => rej(getAll.error);
+    req.onerror = () => rej(req.error);
   });
 }
 
-// Also try to push to any open client (best effort)
+// Best-effort: also post to any open client
 async function postToAnyClient(payload, maxMs = 15000) {
   const start = Date.now();
   while (Date.now() - start < maxMs) {
@@ -74,7 +78,7 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 
-// Page can ask for a recent click or drain the queue
+// Page can fetch the last-click (recent) and drain the queue
 self.addEventListener('message', (event) => {
   const msg = event?.data;
   if (!msg) return;
