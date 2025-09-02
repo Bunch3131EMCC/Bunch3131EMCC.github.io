@@ -11,33 +11,35 @@
   <title>Pheasant App</title>
 
   <!-- Manifest -->
-  <link rel="manifest" href="manifest.json?v=4" />
+  <link rel="manifest" href="manifest.json?v=6" />
 
   <!-- Favicon (fallback). -->
-  <link rel="icon" href="assets/icon_20pt@3x.png?v=4" sizes="32x32" />
+  <link rel="icon" href="assets/icon_20pt@3x.png?v=6" sizes="32x32" />
 
   <!-- iOS / Safari icons -->
-  <link rel="apple-touch-icon" sizes="40x40" href="assets/icon_20pt@2x.png?v=4">
-  <link rel="apple-touch-icon" sizes="60x60" href="assets/icon_20pt@3x.png?v=4">
-  <link rel="apple-touch-icon" sizes="58x58" href="assets/icon_29pt@2x.png?v=4">
-  <link rel="apple-touch-icon" sizes="87x87" href="assets/icon_29pt@3x.png?v=4">
-  <link rel="apple-touch-icon" sizes="80x80" href="assets/icon_40pt@2x.png?v=4">
-  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_40pt@3x.png?v=4">
-  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_60pt@2x.png?v=4">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon_60pt@3x.png?v=4">
-  <link rel="apple-touch-icon" sizes="76x76" href="assets/icon_76pt@1x.png?v=4">
-  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon_76pt@2x.png?v=4">
-  <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=4">
-  <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=4">
+  <link rel="apple-touch-icon" sizes="40x40" href="assets/icon_20pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="60x60" href="assets/icon_20pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="58x58" href="assets/icon_29pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="87x87" href="assets/icon_29pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="80x80" href="assets/icon_40pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_40pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_60pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon_60pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="76x76" href="assets/icon_76pt@1x.png?v=6">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon_76pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=6">
 
   <style>
     :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
     .wrap{max-width:860px;margin:0 auto;padding:24px}
     header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
     .logo{width:72px;height:72px;border-radius:14px;border:1px solid var(--border);overflow:hidden;display:grid;place-items:center;background:#fff}
     .logo img{width:100%;height:100%;object-fit:contain}
-    h1{margin:0;font-size:28px;font-weight:800}.muted{color:var(--muted)}
+    h1{margin:0;font-size:28px;font-weight:800}
+    .muted{color:var(--muted)}
     .card{border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;background:#fff}
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .btn{border:1px solid #111827;background:#111827;color:#fff;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer}
@@ -75,16 +77,12 @@
     <!-- Schedule summary -->
     <div class="card" id="schedule-today" style="margin-top:16px;"></div>
 
-    <div style="position:fixed; top:0; left:0; right:0; bottom:0; background:#fff; z-index:9999;">
- 
-
-
     <!-- SW status (debug helper) -->
     <div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
   </div>
 
   <!-- OneSignal SDK -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js?v=6"></script>
 
   <!-- OneSignal init + UI logic -->
   <script>
@@ -129,7 +127,7 @@
         try {
           await OneSignal.init({
             appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
-            serviceWorkerPath: '/OneSignalSDKWorker.js' // root site => use rooted path
+            serviceWorkerPath: '/OneSignalSDKWorker.js'
           });
 
           const subBtn  = document.getElementById('btn-subscribe');
@@ -164,7 +162,6 @@
             showStatus(OneSignal);
           };
 
-          // In case the browser updates permission/sub shortly after init
           setTimeout(() => refreshUI(OneSignal), 500);
           setTimeout(() => refreshUI(OneSignal), 2000);
         } catch (e) {
@@ -175,9 +172,9 @@
     });
   </script>
 
-  <!-- Inbox (v10) -->
-  <script type="module" src="assets/inbox.js?v=10"></script>
-  <!-- Fallback so the card is never empty if the module is cached/late -->
+  <!-- Inbox (v11) -->
+  <script type="module" src="assets/inbox.js?v=11"></script>
+  <!-- Fallback -->
   <script>
     window.addEventListener('load', () => {
       const el = document.getElementById('recent-alerts');
@@ -194,14 +191,14 @@
   </script>
 
   <!-- Schedule -->
-  <script defer src="assets/schedule.js?v=9"></script>
+  <script defer src="assets/schedule.js?v=10"></script>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      renderScheduleSummary('schedule-today', 'schedule.json'); // or 'assets/schedule.json'
+      renderScheduleSummary('schedule-today', 'schedule.json');
     });
   </script>
 
-  <!-- SW status + auto-reload when SW takes control -->
+  <!-- SW status + auto-reload -->
   <script>
     (async () => {
       const el = document.getElementById('sw-status');
