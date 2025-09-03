@@ -35,27 +35,44 @@ function normalizeEvent(evtOrPayload) {
   return { title, body, url, at };
 }
 
-// ---- Replace your existing addAlert(...) with this:
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
   if (!a.title && !a.body) a.title = 'Notification opened';
 
-  // tiny dedupe: same title+body within 10s (prevents true double-fires)
-  const key = `${a.title || ''}||${a.body || ''}`;
   const now = Date.now();
   window.__pheasantSeen = window.__pheasantSeen || [];
-  const dupe = window.__pheasantSeen.find(x => x.key === key && (now - x.t) < 10000);
-  if (dupe) return;
-  window.__pheasantSeen.push({ key, t: now });
+  const sameTitleRecent = window.__pheasantSeen.find(
+    x => x.title === (a.title || '') && (now - x.t) < 30000
+  );
 
-  // always keep history — prepend newest
   const list = loadAlerts();
+  const twoMin = 2 * 60 * 1000;
+  const idx = list.findIndex(
+    x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || '')
+  );
+
+  if (idx >= 0) {
+    const old = list[idx];
+    const oldBody = old.body || '';
+    const newBody = a.body || '';
+    if (newBody && newBody.length > oldBody.length) {
+      list[idx] = a;
+      saveAlerts(list);
+      renderRecentAlerts('recent-alerts', 5);
+      renderInboxPage('inbox');
+    }
+    if (!sameTitleRecent) window.__pheasantSeen.push({ title: a.title || '', t: now });
+    return;
+  }
+
+  if (sameTitleRecent) return;
+
   list.unshift(a);
   saveAlerts(list);
+  renderRecentAlerts('recent-alerts', 5);
+  renderInboxPage('inbox');
 
-  // re-render UI
-  renderRecentAlerts('recent-alerts', 5);  // your existing function — shows up to 5
-  renderInboxPage('inbox');                 // full history page
+  window.__pheasantSeen.push({ title: a.title || '', t: now });
 }
 
 // ---------- Cold-launch payload (?inbox=<json>) ----------
