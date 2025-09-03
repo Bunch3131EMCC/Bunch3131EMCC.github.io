@@ -1,13 +1,13 @@
 // /OneSignalSDKWorker.js
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-// --- helper: broadcast a message into any open app windows
+// broadcast helper
 async function broadcast(msg) {
   const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   for (const c of clients) c.postMessage(msg);
 }
 
-// Proof-of-life (okay to keep during testing)
+// proof-of-life
 self.addEventListener('install', (event) => {
   event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload: { title: 'SW installed', at: Date.now() } }));
 });
@@ -18,7 +18,7 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
-// Reply to ANY page message so SW ping always shows "SW pong"
+// echo any page ping → “SW pong”
 self.addEventListener('message', (event) => {
   const ch = event?.data?.channel || '(no channel)';
   const body = (ch === 'pheasant-inbox-hello' || ch === 'pheasant-inbox-fetch') ? ch : JSON.stringify(event.data);
@@ -28,15 +28,22 @@ self.addEventListener('message', (event) => {
   }));
 });
 
-// Forward notification clicks into the page (critical on iOS)
+// notification clicks → back into the page (scope-safe)
 self.addEventListener('notificationclick', (event) => {
+  event.waitUntil(broadcast({
+    channel: 'pheasant-inbox',
+    payload: { title: 'SW click', body: '(tap detected)', at: Date.now() }
+  }));
+
   const payload = {
     title: event.notification?.title || 'Notification',
     body:  event.notification?.body  || '',
     data:  event.notification?.data  || {},
     at: Date.now()
   };
-  const targetUrl = '/'; // change if you want a specific entry page
+
+  const scopeURL = new URL(self.registration.scope);
+  const openURL  = scopeURL.href;
 
   event.waitUntil((async () => {
     const pages = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -45,9 +52,9 @@ self.addEventListener('notificationclick', (event) => {
       try { pages.forEach(c => c.postMessage({ channel: 'pheasant-inbox', payload })); } catch {}
       return;
     }
-    const urlWithPayload =
-      targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'inbox=' + encodeURIComponent(JSON.stringify(payload));
-    await self.clients.openWindow(urlWithPayload);
+    const u = new URL(openURL);
+    u.searchParams.set('inbox', encodeURIComponent(JSON.stringify(payload)));
+    await self.clients.openWindow(u.toString());
 
     setTimeout(async () => {
       try {
@@ -58,7 +65,7 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 
-// Best-effort: forward raw push payloads too (may be empty on iOS)
+// best-effort: raw push → page
 self.addEventListener('push', (event) => {
   try {
     const data = event.data ? (event.data.json?.() ?? {}) : {};
