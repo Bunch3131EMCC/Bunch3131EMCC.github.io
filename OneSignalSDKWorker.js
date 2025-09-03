@@ -1,40 +1,19 @@
-// /OneSignalSDKWorker.js
+// /OneSignalSDKWorker.js (clean)
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 
-// broadcast helper
+// Broadcast helper to talk to any open app windows
 async function broadcast(msg) {
   const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   for (const c of clients) c.postMessage(msg);
 }
 
-// proof-of-life
-self.addEventListener('install', (event) => {
-  event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload: { title: 'SW installed', at: Date.now() } }));
-});
+// Keep claim (helps the updated SW take control), but no noisy logs
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    await self.clients.claim();
-    await broadcast({ channel: 'pheasant-inbox', payload: { title: 'SW activated', at: Date.now() } });
-  })());
+  event.waitUntil(self.clients.claim());
 });
 
-// echo any page ping → “SW pong”
-self.addEventListener('message', (event) => {
-  const ch = event?.data?.channel || '(no channel)';
-  const body = (ch === 'pheasant-inbox-hello' || ch === 'pheasant-inbox-fetch') ? ch : JSON.stringify(event.data);
-  event.waitUntil(broadcast({
-    channel: 'pheasant-inbox',
-    payload: { title: 'SW pong', body, at: Date.now() }
-  }));
-});
-
-// notification clicks → back into the page (scope-safe)
+// ----- Notification click → forward real payload to the page -----
 self.addEventListener('notificationclick', (event) => {
-  event.waitUntil(broadcast({
-    channel: 'pheasant-inbox',
-    payload: { title: 'SW click', body: '(tap detected)', at: Date.now() }
-  }));
-
   const payload = {
     title: event.notification?.title || 'Notification',
     body:  event.notification?.body  || '',
@@ -46,16 +25,20 @@ self.addEventListener('notificationclick', (event) => {
   const openURL  = scopeURL.href;
 
   event.waitUntil((async () => {
+    // If an app window exists, focus it and deliver the payload
     const pages = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (pages.length) {
       try { await pages[0].focus(); } catch {}
       try { pages.forEach(c => c.postMessage({ channel: 'pheasant-inbox', payload })); } catch {}
       return;
     }
+
+    // Cold launch: open with ?inbox= so the page can consume on load
     const u = new URL(openURL);
     u.searchParams.set('inbox', encodeURIComponent(JSON.stringify(payload)));
     await self.clients.openWindow(u.toString());
 
+    // After a short delay, try broadcasting again (page may be ready now)
     setTimeout(async () => {
       try {
         const again = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -65,7 +48,7 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 
-// best-effort: raw push → page
+// ----- Best-effort: forward raw push payloads (may be empty on iOS) -----
 self.addEventListener('push', (event) => {
   try {
     const data = event.data ? (event.data.json?.() ?? {}) : {};
@@ -78,3 +61,8 @@ self.addEventListener('push', (event) => {
     event.waitUntil(broadcast({ channel: 'pheasant-inbox', payload }));
   } catch (_) {}
 });
+
+// NOTE: Intentionally removed noisy debug/logging:
+// - install/activate proof-of-life broadcasts
+// - message echo -> "SW pong"
+// - extra "SW click" broadcast
