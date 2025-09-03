@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Par-3 Tees Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <style>
+    :root{--bg:#0b1220;--fg:#e6e9ef;--muted:#92a0b3;--accent:#ef4444;--card:#121a2a;--border:#223049}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{display:grid;grid-template-rows:auto 1fr; height:100vh;}
+    header{display:flex;gap:.75rem;align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,#0d1729,#0a1120)}
+    h1{font-size:16px;margin:0;font-weight:600}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+    .controls input, .controls select, .controls button, .controls textarea{background:#0f1a2e;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:14px}
+    .controls button{background:var(--accent);color:#fff;border:none;font-weight:700;box-shadow:0 2px 10px rgba(239,68,68,.35)}
+    .controls button.alt{background:#0f1a2e;color:var(--fg);border:1px solid var(--border);box-shadow:none}
+    .controls .note{color:var(--muted);font-size:12px;padding:0 8px}
+    #map{height:100%; min-height: 480px;}
+    .leaflet-div-icon{background:#ef4444;border:2px solid #991b1b;border-radius:14px; width:28px;height:28px; display:grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.35)}
+    .pin-num{font-weight:800; color:#fff; font-size:13px}
+    .leaflet-tooltip{background:#0c1527;border:1px solid #253454;color:#fff}
+    details{margin-left:8px}
+    summary{cursor:pointer;color:var(--muted)}
+    textarea{width:320px;height:90px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Par‑3 Tees Map</h1>
+    <div class="controls">
+      <select id="basemap">
+        <option value="osm">OSM (Map)</option>
+        <option value="sat" selected>Esri World Imagery (Satellite)</option>
+      </select>
+      <input id="goto" placeholder="Fly to: lat, lng" />
+      <button id="fly">Go</button>
+      <button class="alt" id="fit">Fit to all pins</button>
+      <button id="addPin">Add pin</button>
+      <button id="renumber" class="alt">Renumber 1–N</button>
+      <button id="export">Export JSON</button>
+      <details>
+        <summary>Import JSON</summary>
+        <div style="display:flex;gap:8px;align-items:start">
+          <textarea id="importTxt" placeholder='[{"label":"1","lat":38.5415,"lng":-121.6898,"note":"Front of 18 tee."}]'></textarea>
+          <button id="doImport">Load</button>
+        </div>
+      </details>
+      <span class="note">Tip: drag pins to fine‑tune on the fly.</span>
+    </div>
+  </header>
+  <div id="map"></div>
+</div>
+
+<script>
+// === Basic map ===
+const map = L.map('map', {
+  zoomControl: true,
+  preferCanvas: true
+}).setView([38.5415,-121.6898], 16); // Center on El Macero
+
+setTimeout(() => map.invalidateSize(), 0);
+
+// Basemaps
+const layers = {
+  osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 20,
+    attribution: '&copy; OpenStreetMap'
+  }),
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Esri, Maxar, Earthstar Geographics'
+  })
+};
+layers.sat.addTo(map);
+
+// Basemap toggle
+const baseSel = document.getElementById('basemap');
+baseSel.value = 'sat'; // reflect default in UI
+baseSel.addEventListener('change', () => {
+  const v = baseSel.value;
+  Object.values(layers).forEach(l => map.removeLayer(l));
+  layers[v].addTo(map);
+});
+
+// Numbered red pin factory
+function numIcon(n){
+  return L.divIcon({
+    className: 'leaflet-div-icon',
+    html: `<span class="pin-num">${n}</span>`,
+    iconSize: [28,28],
+    iconAnchor: [14,28],
+    popupAnchor: [0,-24]
+  });
+}
+
+// Initial teeData (start with 18 around center)
+let teeData = Array.from({length:18}, (_,i)=>({
+  label: String(i+1),
+  lat: 38.5415 + (Math.random()-0.5)*0.001,
+  lng: -121.6898 + (Math.random()-0.5)*0.001,
+  note: ''
+}));
+
+const featureGroup = L.featureGroup().addTo(map);
+const markers = [];
+
+function renderPins(){
+  featureGroup.clearLayers();
+  markers.length = 0;
+  teeData.forEach((t,i) => {
+    const m = L.marker([t.lat, t.lng], { icon:numIcon(t.label || (i+1)), draggable:true })
+      .bindPopup(`<b>Tee ${t.label||i+1}</b><br>${t.note||''}`)
+      .addTo(featureGroup);
+    m.on('dragend', e => {
+      const ll = e.target.getLatLng();
+      t.lat = ll.lat; t.lng = ll.lng;
+    });
+        markers.push(m);
+  });
+}
+renderPins();
+
+// Fit / Fly
+function fitAll(){
+  if (!markers.length) return;
+  const group = L.featureGroup(markers);
+  map.fitBounds(group.getBounds().pad(0.2));
+}
+
+document.getElementById('fit').addEventListener('click', fitAll);
+fitAll();
+
+document.getElementById('fly').addEventListener('click', () => {
+  const v = document.getElementById('goto').value.trim();
+  if(!v) return;
+  const parts = v.split(',').map(s => parseFloat(s.trim()));
+  if(parts.length===2 && parts.every(n => Number.isFinite(n))){
+    map.flyTo(parts, 17, {duration:0.7});
+  }
+});
+
+// Import/Export
+function exportJSON(){
+  const out = JSON.stringify(teeData, null, 2);
+  const blob = new Blob([out], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), {href:url, download:'par3-tees.json'});
+  a.click(); URL.revokeObjectURL(url);
+}
+
+document.getElementById('export').addEventListener('click', exportJSON);
+
+document.getElementById('doImport').addEventListener('click', () => {
+  try{
+    const txt = document.getElementById('importTxt').value;
+    const arr = JSON.parse(txt);
+    if(Array.isArray(arr)){
+      teeData = arr.map((t,i)=>({
+        label: String(t.label ?? i+1),
+        lat: Number(t.lat),
+        lng: Number(t.lng),
+        note: t.note || ''
+      })).filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lng));
+      renderPins();
+      fitAll();
+    }
+  }catch(e){
+    alert('Could not import JSON. Check formatting.');
+  }
+});
+
+// Add / Renumber
+const addBtn = document.getElementById('addPin');
+const renumBtn = document.getElementById('renumber');
+
+addBtn.addEventListener('click', ()=>{
+  const c = map.getCenter();
+  const nextLabel = String(teeData.length + 1);
+  teeData.push({ label: nextLabel, lat: c.lat, lng: c.lng, note: '' });
+  renderPins();
+});
+
+renumBtn.addEventListener('click', ()=>{
+  teeData.forEach((t,i)=> t.label = String(i+1));
+  renderPins();
+});
+</script>
+</body>
+</html>
