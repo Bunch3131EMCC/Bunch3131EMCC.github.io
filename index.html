@@ -166,30 +166,46 @@
             });
           } catch {}
 
-          // Foreground/Click bridge (ensures logging even if inbox.js loads late)
-          if (!window.__OS_FG_BRIDGE__) {
-            window.__OS_FG_BRIDGE__ = true;
-            OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
-              try {
-                const n = evt?.notification || {};
-                window.postMessage({
-                  channel: 'pheasant-inbox',
-                  payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
-                }, '*');
-                if (evt?.preventDefault) evt.preventDefault();
-                if (n?.display) n.display();
-              } catch {}
-            });
-            OneSignal.Notifications.addEventListener('click', (evt) => {
-              try {
-                const n = evt?.notification || {};
-                window.postMessage({
-                  channel: 'pheasant-inbox',
-                  payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
-                }, '*');
-              } catch {}
-            });
-          }
+         // Foreground/Click bridge (ensures logging even if inbox.js loads late)
+if (!window.__OS_FG_BRIDGE__) {
+  window.__OS_FG_BRIDGE__ = true;
+
+  // Fires just before a notif shows while app is open
+  OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+    try {
+      const n = evt?.notification || {};
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
+      }, '*');
+      if (evt?.preventDefault) evt.preventDefault();
+      if (n?.display) n.display();
+    } catch {}
+  });
+
+  // Fires once the notif has actually been displayed (belt-and-suspenders)
+  OneSignal.Notifications.addEventListener('displayed', (evt) => {
+    try {
+      const n = evt?.notification || {};
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
+      }, '*');
+    } catch {}
+  });
+
+  // Fires when the user taps the notif while app is open
+  OneSignal.Notifications.addEventListener('click', (evt) => {
+    try {
+      const n = evt?.notification || {};
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
+      }, '*');
+    } catch {}
+  });
+}
+
 
           // UI wiring
           OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
