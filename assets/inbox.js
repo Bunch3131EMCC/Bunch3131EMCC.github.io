@@ -1,4 +1,4 @@
-// /assets/inbox.js (v14)
+// /assets/inbox.js (v14 clean)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 // Optional on-page debug (use ?debug=1)
@@ -8,43 +8,56 @@ function dbg(...args) {
   console.log('[inbox]', ...args);
   try {
     const el = document.getElementById('inbox-debug');
-    if (el) el.innerHTML += `<div style="padding:2px 0;border-top:1px solid #eee"><code>${
-      args.map(a => typeof a==='string' ? a : JSON.stringify(a)).join(' ')
-    }</code></div>`;
+    if (el) {
+      el.innerHTML += `<div style="padding:2px 0;border-top:1px solid #eee"><code>${
+        args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+      }</code></div>`;
+    }
   } catch {}
 }
 
-// Storage helpers
-function loadAlerts() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
-function saveAlerts(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100))); }
+// ---- Storage helpers
+function loadAlerts() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveAlerts(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
+}
 
-// Normalize + add
+// ---- Normalize + add
 function normalizeEvent(evtOrPayload) {
   const e = evtOrPayload || {};
   const n = e.notification || e;
-  const data = n.data || e.additionalData || {};
-  const title = n.title || e.title || data.title || '';
-  const body  = n.body  || e.body  || data.alert || data.body || '';
+  const data = n?.data || e.additionalData || {};
+  const title = n?.title || e.title || data.title || '';
+  const body  = n?.body  || e.body  || data.alert || data.body || '';
   const url   = data.url || data.launchURL || data.openURL || (location.origin + location.pathname);
   const at    = e.at || Date.now();
   return { title, body, url, at };
 }
+
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
   if (!a.title && !a.body) a.title = 'Notification opened';
 
   const now = Date.now();
+  // session-level quick dedupe
   window.__pheasantSeen = window.__pheasantSeen || [];
-  const sameTitleRecent = window.__pheasantSeen.find(x => x.title === (a.title || '') && (now - x.t) < 30000);
+  const sameTitleRecent = window.__pheasantSeen.find(
+    x => x.title === (a.title || '') && (now - x.t) < 30000
+  );
 
   const list = loadAlerts();
   const twoMin = 2 * 60 * 1000;
-  const idx = list.findIndex(x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || ''));
+  const idx = list.findIndex(
+    x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || '')
+  );
 
   if (idx >= 0) {
     const old = list[idx];
-    const oldBody = (old.body || '');
-    const newBody = (a.body || '');
+    const oldBody = old.body || '';
+    const newBody = a.body || '';
     if (newBody && newBody.length > oldBody.length) {
       list[idx] = a;
       saveAlerts(list);
@@ -54,6 +67,7 @@ function addAlert(evtOrPayload) {
     if (!sameTitleRecent) window.__pheasantSeen.push({ title: a.title || '', t: now });
     return;
   }
+
   if (sameTitleRecent) return;
 
   list.unshift(a);
@@ -64,12 +78,12 @@ function addAlert(evtOrPayload) {
   window.__pheasantSeen.push({ title: a.title || '', t: now });
 }
 
-// Consume cold-launch payload (?inbox=<json>) — helpful on iOS
+// ---- Consume cold-launch payload (?inbox=<json>)
 function tryConsumeInboxParam() {
   try {
-    const p = new URLSearchParams(location.search).get('inbox');
-    if (!p) return;
-    const payload = JSON.parse(decodeURIComponent(p));
+    const raw = new URLSearchParams(location.search).get('inbox');
+    if (!raw) return;
+    const payload = JSON.parse(decodeURIComponent(raw));
     dbg('consume ?inbox', payload);
     addAlert(payload);
     const u = new URL(location.href);
@@ -80,7 +94,7 @@ function tryConsumeInboxParam() {
   }
 }
 
-// Renderers
+// ---- Renderers
 export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
   const el = document.getElementById(mountId);
   if (!el) return;
@@ -132,11 +146,14 @@ export function renderInboxPage(mountId = 'inbox') {
       `).join('');
 }
 
-// OneSignal page events (fires while app is open) — this is what made "last night" work
+// ---- OneSignal page events (fires while app is open)
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
-    OneSignal.Notifications.addEventListener('click', (evt) => { dbg('OS click', evt); addAlert(evt); });
+    OneSignal.Notifications.addEventListener('click', (evt) => {
+      dbg('OS click', evt);
+      addAlert(evt);
+    });
     OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
       dbg('OS fg', evt);
       addAlert(evt);
@@ -147,7 +164,7 @@ window.OneSignalDeferred.push(function (OneSignal) {
   } catch (e) { dbg('OS listeners error', e); }
 });
 
-// SW messages (tap from closed, push forwarders)
+// ---- SW messages (tap from closed, push forwarders)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
@@ -157,7 +174,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Page messages (foreground bridge via window.postMessage)
+// ---- Page messages (foreground bridge via window.postMessage)
 window.addEventListener('message', (event) => {
   if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
     dbg('PAGE message', event.data.payload);
@@ -165,7 +182,7 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// Aggressive SW handshake to fetch missed clicks
+// ---- Aggressive SW handshake to fetch missed clicks
 function pingSW(times = 8, delay = 400) {
   if (!('serviceWorker' in navigator)) return;
   let count = 0;
@@ -176,15 +193,15 @@ function pingSW(times = 8, delay = 400) {
         reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
         reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
       })
-      .catch(()=>{});
+      .catch(() => {});
     if (++count < times) setTimeout(send, delay);
   };
   send();
 }
 
-// Auto-render + start handshakes
+// ---- Auto-render + handshakes
 document.addEventListener('DOMContentLoaded', () => {
-  tryConsumeInboxParam();          // <-- new; handles cold-launch taps
+  tryConsumeInboxParam();
   renderRecentAlerts('recent-alerts', 5);
   renderInboxPage('inbox');
   pingSW(8, 400);
