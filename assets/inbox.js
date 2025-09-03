@@ -182,31 +182,16 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// ---- Aggressive SW handshake to fetch missed clicks
-function pingSW(times = 8, delay = 400) {
-  if (!('serviceWorker' in navigator)) return;
-  let count = 0;
-  const send = () => {
-    navigator.serviceWorker.ready
-      .then(reg => {
-        dbg('ping SW');
-        reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
-        reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
-      })
-      .catch(() => {});
-    if (++count < times) setTimeout(send, delay);
-  };
-  send();
-}
+
 
 // ---- Auto-render + handshakes
 document.addEventListener('DOMContentLoaded', () => {
   tryConsumeInboxParam();
   renderRecentAlerts('recent-alerts', 5);
   renderInboxPage('inbox');
-  pingSW(8, 400);
+  
 });
-window.addEventListener('load', () => { pingSW(5, 600); });
+window.addEventListener('load', () => {  });
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') pingSW(4, 500);
+  if (document.visibilityState === 'visible') 
 });
