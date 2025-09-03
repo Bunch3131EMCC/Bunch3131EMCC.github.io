@@ -1,4 +1,4 @@
-// /assets/inbox.js (v13)
+// /assets/inbox.js (v14)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 // Optional on-page debug (use ?debug=1)
@@ -39,8 +39,8 @@ function addAlert(evtOrPayload) {
 
   const list = loadAlerts();
   const twoMin = 2 * 60 * 1000;
-
   const idx = list.findIndex(x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || ''));
+
   if (idx >= 0) {
     const old = list[idx];
     const oldBody = (old.body || '');
@@ -54,7 +54,6 @@ function addAlert(evtOrPayload) {
     if (!sameTitleRecent) window.__pheasantSeen.push({ title: a.title || '', t: now });
     return;
   }
-
   if (sameTitleRecent) return;
 
   list.unshift(a);
@@ -63,6 +62,22 @@ function addAlert(evtOrPayload) {
   renderInboxPage('inbox');
 
   window.__pheasantSeen.push({ title: a.title || '', t: now });
+}
+
+// Consume cold-launch payload (?inbox=<json>) — helpful on iOS
+function tryConsumeInboxParam() {
+  try {
+    const p = new URLSearchParams(location.search).get('inbox');
+    if (!p) return;
+    const payload = JSON.parse(decodeURIComponent(p));
+    dbg('consume ?inbox', payload);
+    addAlert(payload);
+    const u = new URL(location.href);
+    u.searchParams.delete('inbox');
+    history.replaceState(null, '', u.toString());
+  } catch (e) {
+    dbg('consume error', e);
+  }
 }
 
 // Renderers
@@ -117,7 +132,7 @@ export function renderInboxPage(mountId = 'inbox') {
       `).join('');
 }
 
-// OneSignal page events (fires while app is open)
+// OneSignal page events (fires while app is open) — this is what made "last night" work
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
@@ -169,6 +184,7 @@ function pingSW(times = 8, delay = 400) {
 
 // Auto-render + start handshakes
 document.addEventListener('DOMContentLoaded', () => {
+  tryConsumeInboxParam();          // <-- new; handles cold-launch taps
   renderRecentAlerts('recent-alerts', 5);
   renderInboxPage('inbox');
   pingSW(8, 400);
