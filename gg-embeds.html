@@ -1,4 +1,4 @@
-<!doctype html>
+\<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -40,8 +40,10 @@
     <button type="button" class="tab" role="tab" id="tab-matches" aria-controls="panel-matches" aria-selected="true">Matches</button>
     <button type="button" class="tab" role="tab" id="tab-scoring" aria-controls="panel-scoring" aria-selected="false">Scoring</button>
     <button type="button" class="tab" role="tab" id="tab-stats"   aria-controls="panel-stats"   aria-selected="false">Stats</button>
-    <!-- NEW unique id & controls -->
-    <!--<button type="button" class="tab" role="tab" id="tab-y2024"   aria-controls="panel-y2024"   aria-selected="false">2024</button>-->
+
+    <!-- Placeholder tab buttons (uncomment to use) -->
+    <!-- <button type="button" class="tab" role="tab" id="tab-extra1" aria-controls="panel-extra1" aria-selected="false">Extra 1</button> -->
+    <!-- <button type="button" class="tab" role="tab" id="tab-extra2" aria-controls="panel-extra2" aria-selected="false">Extra 2</button> -->
   </div>
 
   <div class="wrap">
@@ -49,8 +51,10 @@
     <section id="panel-matches" role="tabpanel" aria-labelledby="tab-matches" class="card"></section>
     <section id="panel-scoring" role="tabpanel" aria-labelledby="tab-scoring" class="card" hidden></section>
     <section id="panel-stats"   role="tabpanel" aria-labelledby="tab-stats"   class="card" hidden></section>
-    <!-- NEW panel; aria-labelledby points to tab-y2024 -->
-    <!--<section id="panel-y2024"   role="tabpanel" aria-labelledby="tab-y2024"   class="card" hidden></section>-->
+
+    <!-- Placeholder panels (uncomment to use) -->
+    <!-- <section id="panel-extra1" role="tabpanel" aria-labelledby="tab-extra1" class="card" hidden></section> -->
+    <!-- <section id="panel-extra2" role="tabpanel" aria-labelledby="tab-extra2" class="card" hidden></section> -->
   </div>
 
 <script>
@@ -60,8 +64,9 @@
     matches: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/next_round?page_id=11881230126622457285",
     scoring: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/customized_tournament_results?page_id=11881230128635723207&no_player_profile=true&no_print_button=true",
     stats:   "https://www.golfgenius.com/leagues/11881229955629071492/widgets/player_stats?page_id=11881230129642356168",
-    // Key must be a valid identifier/string:
-    //-y2024:   "https://www.golfgenius.com/leagues/10898143129479691694/widgets/customized_tournament_results?page_id=10935949364488584610"
+    // Placeholders (add URL + uncomment where needed)
+    // extra1: "https://example.com/",
+    // extra2: "https://example.com/"
   };
 
   const mounted = new Set();
@@ -93,18 +98,19 @@
       if (show) p.removeAttribute('hidden'); else p.setAttribute('hidden', '');
     });
 
-    mountEmbed(key, 'panel-' + key);
+    if (external[key]) mountEmbed(key, 'panel-' + key);
     try{ localStorage.setItem('gg_tab', key); }catch(_){}
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Wire tab clicks (note y2024)
     document.getElementById('tab-matches').addEventListener('click', () => selectTab('matches'));
     document.getElementById('tab-scoring').addEventListener('click', () => selectTab('scoring'));
     document.getElementById('tab-stats').addEventListener('click',   () => selectTab('stats'));
-    document.getElementById('tab-y2024').addEventListener('click',   () => selectTab('y2024'));
 
-    // Default/restore; fall back if unknown
+    // Placeholder listeners (uncomment to use)
+    // document.getElementById('tab-extra1').addEventListener('click', () => selectTab('extra1'));
+    // document.getElementById('tab-extra2').addEventListener('click', () => selectTab('extra2'));
+
     const last = localStorage.getItem('gg_tab') || 'matches';
     selectTab(external[last] ? last : 'matches');
   });
