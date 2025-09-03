@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ffffff" />
-
   <meta name="apple-mobile-web-app-title" content="Pheasant App" />
   <meta name="application-name" content="Pheasant App" />
   <title>Pheasant App</title>
@@ -74,17 +73,15 @@
       <div id="push-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
     </div>
 
-    <!-- Debug tools (temporary; separate so they don't hide with the push card) -->
+    <!-- Debug tools (separate so they don't hide with the push card) -->
     <div class="card" id="debug-tools">
       <h3 style="margin:0 0 8px 0;">Debug Tools</h3>
       <div class="row">
         <button id="dbg-page-msg" class="btn alt">Test Page → Inbox</button>
-        <button id="dbg-sw-msg" class="btn alt">Test SW → Inbox</button>
-        <button id="dbg-os-fg" class="btn alt">Simulate OS Foreground</button>
+        <button id="dbg-sw-msg"   class="btn alt">Test SW → Inbox</button>
+        <button id="dbg-os-fg"    class="btn alt">Simulate OS Foreground</button>
       </div>
-      <div class="muted" style="font-size:12px;margin-top:8px;">
-        Remove this card once things look good.
-      </div>
+      <div class="muted" style="font-size:12px;margin-top:8px;">Remove this card once things look good.</div>
     </div>
 
     <!-- Notifications Inbox (home summary) -->
@@ -111,6 +108,7 @@
   <!-- OneSignal init + UI logic (guarded) -->
   <script>
     window.__OS_INITED__ = window.__OS_INITED__ || false;
+    window.__OS_FG_BRIDGE__ = window.__OS_FG_BRIDGE__ || false;
     const log = (...a) => console.log('[Pheasant]', ...a);
 
     function granted(OneSignal) {
@@ -119,16 +117,13 @@
     }
     function showStatus(OneSignal) {
       const el = document.getElementById('push-status');
-      if (!el) return;
+      if (!el || !OneSignal?.Notifications) return;
       const supported = OneSignal.Notifications.isPushSupported();
       const perm  = OneSignal.Notifications.permission;
-      const id    = OneSignal.User.PushSubscription.id || null;
-      const opted = OneSignal.User.PushSubscription.optedIn === true;
+      const id    = OneSignal?.User?.PushSubscription?.id || null;
+      const opted = OneSignal?.User?.PushSubscription?.optedIn === true;
       el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
     }
-
-
-    
     function refreshUI(OneSignal) {
       const subBtn  = document.getElementById('btn-subscribe');
       const diagBtn = document.getElementById('btn-diagnostics');
@@ -136,10 +131,10 @@
       const card    = document.getElementById('push-card');
       if (!subBtn || !diagBtn || !card) return;
 
-      const supported = OneSignal.Notifications.isPushSupported();
+      const supported = OneSignal.Notifications.isPushSupported?.() === true;
       const ok = supported && granted(OneSignal) &&
-                 OneSignal.User.PushSubscription.optedIn === true &&
-                 !!OneSignal.User.PushSubscription.id;
+                 OneSignal?.User?.PushSubscription?.optedIn === true &&
+                 !!OneSignal?.User?.PushSubscription?.id;
 
       card.style.display = ok ? 'none' : '';
       if (!ok) {
@@ -163,69 +158,40 @@
             serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
           });
 
-          // Context tag (handy for targeting the PWA vs. browser)
+          // Context tag (optional)
           try {
             await OneSignal.User.addTags({
               channel: (window.matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'browser'),
               origin: location.origin
             });
           } catch {}
-<script>
-  window.addEventListener('load', () => {
-    if (window.__OS_INITED__) return;
-    window.__OS_INITED__ = true;
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function (OneSignal) {
-      try {
-        await OneSignal.init({
-          appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
-          serviceWorkerPath: '/OneSignalSDKWorker.js',
-          serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
-        });
+          // Foreground/Click bridge (ensures logging even if inbox.js loads late)
+          if (!window.__OS_FG_BRIDGE__) {
+            window.__OS_FG_BRIDGE__ = true;
+            OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+              try {
+                const n = evt?.notification || {};
+                window.postMessage({
+                  channel: 'pheasant-inbox',
+                  payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
+                }, '*');
+                if (evt?.preventDefault) evt.preventDefault();
+                if (n?.display) n.display();
+              } catch {}
+            });
+            OneSignal.Notifications.addEventListener('click', (evt) => {
+              try {
+                const n = evt?.notification || {};
+                window.postMessage({
+                  channel: 'pheasant-inbox',
+                  payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
+                }, '*');
+              } catch {}
+            });
+          }
 
-        /* >>> ADD THIS BLOCK (guarded duplicate of the FG path) <<< */
-        if (!window.__OS_FG_BRIDGE__) {
-          window.__OS_FG_BRIDGE__ = true;
-          OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
-            try {
-              const n = evt?.notification || {};
-              // forward into our page logger; this triggers Recent Alerts immediately
-              window.postMessage({
-                channel: 'pheasant-inbox',
-                payload: {
-                  title: n.title || '',
-                  body:  n.body  || '',
-                  data:  n.data  || {},
-                  at: Date.now()
-                }
-              }, '*');
-              // keep the iOS banner visible
-              if (evt?.preventDefault) evt.preventDefault();
-              if (n?.display) n.display();
-            } catch (e) {}
-          });
-
-          OneSignal.Notifications.addEventListener('click', (evt) => {
-            try {
-              const n = evt?.notification || {};
-              window.postMessage({
-                channel: 'pheasant-inbox',
-                payload: {
-                  title: n.title || '',
-                  body:  n.body  || '',
-                  data:  n.data  || {},
-                  at: Date.now()
-                }
-              }, '*');
-            } catch (e) {}
-          });
-        }
-        /* <<< END ADDED BLOCK >>> */
-
-        // (keep the rest of your code: tags, UI listeners, buttons, refreshUI etc.)
-
-          // Keep only UI listeners here. (The page-level notification events are handled in assets/inbox.js)
+          // UI wiring
           OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
           OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
 
@@ -268,7 +234,7 @@
     });
   </script>
 
-  <!-- Home “Recent Alerts” + bridge code -->
+  <!-- Inbox module -->
   <script type="module" src="assets/inbox.js?v=14"></script>
 
   <!-- Schedule -->
@@ -303,7 +269,7 @@
     }
   </script>
 
-  <!-- Debug handlers (separate card so they persist after subscribe) -->
+  <!-- Debug handlers -->
   <script>
     async function postToSW(msg) {
       if (navigator.serviceWorker?.controller) {
