@@ -90,16 +90,16 @@
       </div>
     </header>
 
-   <!-- Push subscribe card -->
+<!-- Push subscribe card -->
 <div class="card" id="push-card">
   <div class="row">
     <button id="btn-subscribe" class="btn">Enable Notifications</button>
     <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
-    <!-- TEMP DEBUG BUTTONS (remove later) -->
-<div class="row" style="margin-top:8px;">
-  <button id="dbg-page-msg" class="btn alt">Test Page → Inbox</button>
-  <button id="dbg-sw-msg" class="btn alt">Test SW → Inbox</button>
-  <button id="dbg-os-fg" class="btn alt">Simulate OS Foreground</button>
+  </div>
+  <p id="ios-instructions" class="muted" style="margin:10px 0 0">
+    iPhone: open from the <em>Home Screen icon</em> (Add to Home Screen) before enabling notifications.
+  </p>
+  <div id="push-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
 </div>
 
   </div> <!-- <-- close the .row BEFORE the text below -->
@@ -110,6 +110,18 @@
   <div id="push-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
 </div>
 
+<!-- Debug tools (temporary) -->
+<div class="card" id="debug-tools">
+  <h3 style="margin:0 0 8px 0;">Debug Tools</h3>
+  <div class="row">
+    <button id="dbg-page-msg" class="btn alt">Test Page → Inbox</button>
+    <button id="dbg-sw-msg" class="btn alt">Test SW → Inbox</button>
+    <button id="dbg-os-fg" class="btn alt">Simulate OS Foreground</button>
+  </div>
+  <div class="muted" style="font-size:12px;margin-top:8px;">
+    Use these to verify logging paths. Remove this card once everything works.
+  </div>
+</div>
 
     <!-- Notifications Inbox (home summary) -->
     <div class="card" id="recent-alerts" style="margin-top:16px;"></div>
@@ -361,5 +373,48 @@
       });
     }
   </script>
+
+  <script>
+  // Prefer the controller; fallback to reg.active, with small retries (iOS can be slow)
+  async function postToSW(msg) {
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage(msg);
+      return true;
+    }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && reg.active) {
+        reg.active.postMessage(msg);
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  // Page → Inbox (should instantly add an entry)
+  document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
+    window.postMessage({
+      channel: 'pheasant-inbox',
+      payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
+    }, '*');
+  });
+
+  // SW → Inbox (bulletproof ping; your SW echoes ANY message as "SW pong")
+  document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
+    const msg = { channel: 'pheasant-inbox-test', note: 'manual ping' };
+    let ok = await postToSW(msg);
+    if (!ok) { await new Promise(r => setTimeout(r, 300)); ok = await postToSW(msg); }
+    if (!ok) { await new Promise(r => setTimeout(r, 800)); ok = await postToSW(msg); }
+    if (!ok) alert('Could not reach Service Worker. Try reloading once.');
+    else alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
+  });
+
+  // Simulate the OneSignal foreground event (uses page bridge)
+  document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
+    const fake = { title: 'DBG OS fg', body: 'simulated foreground', data: {} };
+    window.postMessage({ channel: 'pheasant-inbox', payload: { ...fake, at: Date.now() } }, '*');
+  });
+</script>
+
 </body>
 </html>
