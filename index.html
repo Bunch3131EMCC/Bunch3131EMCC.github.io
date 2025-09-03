@@ -170,41 +170,43 @@
 if (!window.__OS_FG_BRIDGE__) {
   window.__OS_FG_BRIDGE__ = true;
 
+  // tiny helper to forward into inbox.js
+  const forward = (src, evt) => {
+    try {
+      const n = (evt && evt.notification) || evt || {};
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now(), src }
+      }, '*');
+    } catch (e) {
+      console.warn('forward error', e);
+    }
+  };
+
   // Fires just before a notif shows while app is open
-  OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
-    try {
-      const n = evt?.notification || {};
-      window.postMessage({
-        channel: 'pheasant-inbox',
-        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
-      }, '*');
-      if (evt?.preventDefault) evt.preventDefault();
-      if (n?.display) n.display();
-    } catch {}
-  });
+  try {
+    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+      forward('fgWillDisplay', evt);
+      try {
+        if (evt?.preventDefault) evt.preventDefault(); // keep banner behavior consistent
+        const n = evt?.notification;
+        if (n?.display) n.display();
+      } catch {}
+    });
+  } catch (e) {
+    console.warn('hook fgWillDisplay failed', e);
+  }
 
-  // Fires once the notif has actually been displayed (belt-and-suspenders)
-  OneSignal.Notifications.addEventListener('displayed', (evt) => {
-    try {
-      const n = evt?.notification || {};
-      window.postMessage({
-        channel: 'pheasant-inbox',
-        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
-      }, '*');
-    } catch {}
-  });
-
-  // Fires when the user taps the notif while app is open
-  OneSignal.Notifications.addEventListener('click', (evt) => {
-    try {
-      const n = evt?.notification || {};
-      window.postMessage({
-        channel: 'pheasant-inbox',
-        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now() }
-      }, '*');
-    } catch {}
-  });
+  // Fires when the user taps a notif while the app is open
+  try {
+    OneSignal.Notifications.addEventListener('click', (evt) => {
+      forward('click', evt);
+    });
+  } catch (e) {
+    console.warn('hook click failed', e);
+  }
 }
+
 
 
           // UI wiring
