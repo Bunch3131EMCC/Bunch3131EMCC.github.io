@@ -1,4 +1,4 @@
-// /assets/inbox.js (v15 stable – push/click only, no SW noise)
+// /assets/inbox.js (v16 – latest on home, full history in inbox, no overzealous dedupe)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 // (Optional) URL debug: ?debug=1
@@ -39,40 +39,21 @@ function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
   if (!a.title && !a.body) a.title = 'Notification opened';
 
+  // Gentle dedupe: only drop if *identical title+body* landed within the last 10s
+  const key = `${a.title || ''}||${a.body || ''}`;
   const now = Date.now();
   window.__pheasantSeen = window.__pheasantSeen || [];
-  const sameTitleRecent = window.__pheasantSeen.find(
-    x => x.title === (a.title || '') && (now - x.t) < 30000
-  );
+  const duplicate = window.__pheasantSeen.find(x => x.key === key && (now - x.t) < 10000);
+  if (duplicate) return;
+  window.__pheasantSeen.push({ key, t: now });
 
+  // Keep full history — prepend newest, do NOT replace previous with same title
   const list = loadAlerts();
-  const twoMin = 2 * 60 * 1000;
-  const idx = list.findIndex(
-    x => Math.abs((x.at || 0) - (a.at || now)) < twoMin && (x.title || '') === (a.title || '')
-  );
-
-  if (idx >= 0) {
-    const old = list[idx];
-    const oldBody = old.body || '';
-    const newBody = a.body || '';
-    if (newBody && newBody.length > oldBody.length) {
-      list[idx] = a;
-      saveAlerts(list);
-      renderRecentAlerts('recent-alerts', 5);
-      renderInboxPage('inbox');
-    }
-    if (!sameTitleRecent) window.__pheasantSeen.push({ title: a.title || '', t: now });
-    return;
-  }
-
-  if (sameTitleRecent) return;
-
   list.unshift(a);
   saveAlerts(list);
-  renderRecentAlerts('recent-alerts', 5);
-  renderInboxPage('inbox');
 
-  window.__pheasantSeen.push({ title: a.title || '', t: now });
+  renderRecentAlerts('recent-alerts'); // now shows only the latest
+  renderInboxPage('inbox');            // shows full history
 }
 
 // ---------- Cold-launch payload (?inbox=<json>) ----------
@@ -92,24 +73,22 @@ function tryConsumeInboxParam() {
 }
 
 // ---------- Renderers ----------
-export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
+export function renderRecentAlerts(mountId = 'recent-alerts') {
   const el = document.getElementById(mountId);
   if (!el) return;
 
-  const list = loadAlerts().slice(0, max);
-  const body = !list.length
+  const list = loadAlerts();
+  const latest = list[0];
+
+  const body = !latest
     ? `<div class="muted">No recent alerts yet.</div>`
     : `<ul style="list-style:none; padding:0; margin:0;">
-        ${list.map(item => {
-          const when = new Date(item.at);
-          const time = when.toLocaleString([], { hour: 'numeric', minute: '2-digit' });
-          return `<li style="padding:8px 0; border-top:1px solid #e5e7eb;">
-            <div style="font-weight:600;">${item.title || 'Pheasant Alert'}</div>
-            ${item.body ? `<div class="muted">${item.body}</div>` : ''}
-            <div class="muted" style="font-size:12px; margin-top:4px;">${time}</div>
-          </li>`;
-        }).join('')}
-      </ul>`;
+         <li style="padding:8px 0; border-top:1px solid #e5e7eb;">
+           <div style="font-weight:600;">${latest.title || 'Pheasant Alert'}</div>
+           ${latest.body ? `<div class="muted">${latest.body}</div>` : ''}
+           <div class="muted" style="font-size:12px; margin-top:4px;">${new Date(latest.at).toLocaleString([], { hour: 'numeric', minute: '2-digit' })}</div>
+         </li>
+       </ul>`;
 
   el.innerHTML = `
     <h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
@@ -123,7 +102,7 @@ export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
 
   document.getElementById('clear-inbox')?.addEventListener('click', () => {
     saveAlerts([]);
-    renderRecentAlerts(mountId, max);
+    renderRecentAlerts(mountId);
     renderInboxPage('inbox');
   });
 }
@@ -173,11 +152,7 @@ if ('serviceWorker' in navigator) {
 
 // ---------- Boot ----------
 document.addEventListener('DOMContentLoaded', () => {
-  tryConsumeInboxParam();        // log cold-launch payloads
-  renderRecentAlerts('recent-alerts', 5);
+  tryConsumeInboxParam();   // capture cold-launch click payloads
+  renderRecentAlerts('recent-alerts');
   renderInboxPage('inbox');
 });
-
-// Removed:
-// - window.postMessage page bridge (prevents app-generated noise)
-// - pingSW() & callers (removes SW "pong" chatter)
