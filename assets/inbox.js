@@ -1,22 +1,20 @@
-// /assets/inbox.js (v14 clean)
+// /assets/inbox.js (v15 stable – push/click only, no SW noise)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
-// Optional on-page debug (use ?debug=1)
+// (Optional) URL debug: ?debug=1
 const DEBUG_ON = new URLSearchParams(location.search).get('debug') === '1';
 function dbg(...args) {
   if (!DEBUG_ON) return;
-  console.log('[inbox]', ...args);
   try {
+    console.log('[inbox]', ...args);
     const el = document.getElementById('inbox-debug');
-    if (el) {
-      el.innerHTML += `<div style="padding:2px 0;border-top:1px solid #eee"><code>${
-        args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
-      }</code></div>`;
-    }
+    if (el) el.innerHTML += `<div style="padding:2px 0;border-top:1px solid #eee"><code>${
+      args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')
+    }</code></div>`;
   } catch {}
 }
 
-// ---- Storage helpers
+// ---------- Storage ----------
 function loadAlerts() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
   catch { return []; }
@@ -25,10 +23,10 @@ function saveAlerts(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
 }
 
-// ---- Normalize + add
+// ---------- Normalize + add ----------
 function normalizeEvent(evtOrPayload) {
   const e = evtOrPayload || {};
-  const n = e.notification || e;
+  const n = e.notification || e; // OneSignal click/fg events carry .notification
   const data = n?.data || e.additionalData || {};
   const title = n?.title || e.title || data.title || '';
   const body  = n?.body  || e.body  || data.alert || data.body || '';
@@ -42,7 +40,6 @@ function addAlert(evtOrPayload) {
   if (!a.title && !a.body) a.title = 'Notification opened';
 
   const now = Date.now();
-  // session-level quick dedupe
   window.__pheasantSeen = window.__pheasantSeen || [];
   const sameTitleRecent = window.__pheasantSeen.find(
     x => x.title === (a.title || '') && (now - x.t) < 30000
@@ -78,7 +75,7 @@ function addAlert(evtOrPayload) {
   window.__pheasantSeen.push({ title: a.title || '', t: now });
 }
 
-// ---- Consume cold-launch payload (?inbox=<json>)
+// ---------- Cold-launch payload (?inbox=<json>) ----------
 function tryConsumeInboxParam() {
   try {
     const raw = new URLSearchParams(location.search).get('inbox');
@@ -94,7 +91,7 @@ function tryConsumeInboxParam() {
   }
 }
 
-// ---- Renderers
+// ---------- Renderers ----------
 export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
   const el = document.getElementById(mountId);
   if (!el) return;
@@ -146,7 +143,7 @@ export function renderInboxPage(mountId = 'inbox') {
       `).join('');
 }
 
-// ---- OneSignal page events (fires while app is open)
+// ---------- OneSignal (keep foreground + click) ----------
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
@@ -164,7 +161,7 @@ window.OneSignalDeferred.push(function (OneSignal) {
   } catch (e) { dbg('OS listeners error', e); }
 });
 
-// ---- SW messages (tap from closed, push forwarders)
+// ---------- SW messages (click from closed + raw push forwarders) ----------
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
@@ -174,24 +171,13 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ---- Page messages (foreground bridge via window.postMessage)
-window.addEventListener('message', (event) => {
-  if (event?.data?.channel === 'pheasant-inbox' && event.data.payload) {
-    dbg('PAGE message', event.data.payload);
-    addAlert(event.data.payload);
-  }
-});
-
-
-
-// ---- Auto-render + handshakes
+// ---------- Boot ----------
 document.addEventListener('DOMContentLoaded', () => {
-  tryConsumeInboxParam();
+  tryConsumeInboxParam();        // log cold-launch payloads
   renderRecentAlerts('recent-alerts', 5);
   renderInboxPage('inbox');
-  
 });
-window.addEventListener('load', () => {  });
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') 
-});
+
+// Removed:
+// - window.postMessage page bridge (prevents app-generated noise)
+// - pingSW() & callers (removes SW "pong" chatter)
