@@ -1,4 +1,4 @@
-// /assets/inbox.js (v16 – latest on home, full history in inbox, no overzealous dedupe)
+// /assets/inbox.js (v15 stable – push/click only, no SW noise)
 const STORAGE_KEY = 'pheasant_alerts_v1';
 
 // (Optional) URL debug: ?debug=1
@@ -35,25 +35,27 @@ function normalizeEvent(evtOrPayload) {
   return { title, body, url, at };
 }
 
+// ---- Replace your existing addAlert(...) with this:
 function addAlert(evtOrPayload) {
   const a = normalizeEvent(evtOrPayload);
   if (!a.title && !a.body) a.title = 'Notification opened';
 
-  // Gentle dedupe: only drop if *identical title+body* landed within the last 10s
+  // tiny dedupe: same title+body within 10s (prevents true double-fires)
   const key = `${a.title || ''}||${a.body || ''}`;
   const now = Date.now();
   window.__pheasantSeen = window.__pheasantSeen || [];
-  const duplicate = window.__pheasantSeen.find(x => x.key === key && (now - x.t) < 10000);
-  if (duplicate) return;
+  const dupe = window.__pheasantSeen.find(x => x.key === key && (now - x.t) < 10000);
+  if (dupe) return;
   window.__pheasantSeen.push({ key, t: now });
 
-  // Keep full history — prepend newest, do NOT replace previous with same title
+  // always keep history — prepend newest
   const list = loadAlerts();
   list.unshift(a);
   saveAlerts(list);
 
-  renderRecentAlerts('recent-alerts'); // now shows only the latest
-  renderInboxPage('inbox');            // shows full history
+  // re-render UI
+  renderRecentAlerts('recent-alerts', 5);  // your existing function — shows up to 5
+  renderInboxPage('inbox');                 // full history page
 }
 
 // ---------- Cold-launch payload (?inbox=<json>) ----------
@@ -73,22 +75,24 @@ function tryConsumeInboxParam() {
 }
 
 // ---------- Renderers ----------
-export function renderRecentAlerts(mountId = 'recent-alerts') {
+export function renderRecentAlerts(mountId = 'recent-alerts', max = 5) {
   const el = document.getElementById(mountId);
   if (!el) return;
 
-  const list = loadAlerts();
-  const latest = list[0];
-
-  const body = !latest
+  const list = loadAlerts().slice(0, max);
+  const body = !list.length
     ? `<div class="muted">No recent alerts yet.</div>`
     : `<ul style="list-style:none; padding:0; margin:0;">
-         <li style="padding:8px 0; border-top:1px solid #e5e7eb;">
-           <div style="font-weight:600;">${latest.title || 'Pheasant Alert'}</div>
-           ${latest.body ? `<div class="muted">${latest.body}</div>` : ''}
-           <div class="muted" style="font-size:12px; margin-top:4px;">${new Date(latest.at).toLocaleString([], { hour: 'numeric', minute: '2-digit' })}</div>
-         </li>
-       </ul>`;
+        ${list.map(item => {
+          const when = new Date(item.at);
+          const time = when.toLocaleString([], { hour: 'numeric', minute: '2-digit' });
+          return `<li style="padding:8px 0; border-top:1px solid #e5e7eb;">
+            <div style="font-weight:600;">${item.title || 'Pheasant Alert'}</div>
+            ${item.body ? `<div class="muted">${item.body}</div>` : ''}
+            <div class="muted" style="font-size:12px; margin-top:4px;">${time}</div>
+          </li>`;
+        }).join('')}
+      </ul>`;
 
   el.innerHTML = `
     <h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
@@ -102,7 +106,7 @@ export function renderRecentAlerts(mountId = 'recent-alerts') {
 
   document.getElementById('clear-inbox')?.addEventListener('click', () => {
     saveAlerts([]);
-    renderRecentAlerts(mountId);
+    renderRecentAlerts(mountId, max);
     renderInboxPage('inbox');
   });
 }
@@ -152,7 +156,11 @@ if ('serviceWorker' in navigator) {
 
 // ---------- Boot ----------
 document.addEventListener('DOMContentLoaded', () => {
-  tryConsumeInboxParam();   // capture cold-launch click payloads
-  renderRecentAlerts('recent-alerts');
+  tryConsumeInboxParam();        // log cold-launch payloads
+  renderRecentAlerts('recent-alerts', 5);
   renderInboxPage('inbox');
 });
+
+// Removed:
+// - window.postMessage page bridge (prevents app-generated noise)
+// - pingSW() & callers (removes SW "pong" chatter)
