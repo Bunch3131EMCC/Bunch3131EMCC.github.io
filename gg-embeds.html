@@ -48,6 +48,7 @@
     <button type="button" class="tab" role="tab" id="tab-matches" aria-controls="panel-matches" aria-selected="true">Matches</button>
     <button type="button" class="tab" role="tab" id="tab-scoring" aria-controls="panel-scoring" aria-selected="false">Scoring</button>
     <button type="button" class="tab" role="tab" id="tab-stats"   aria-controls="panel-stats"   aria-selected="false">Stats</button>
+    <button type="button" class="tab" role="tab" id="tab-stats"   aria-controls="panel-stats"   aria-selected="false">2024</button>
   </div>
 
   <div class="wrap">
@@ -55,6 +56,7 @@
     <section id="panel-matches" role="tabpanel" aria-labelledby="tab-matches" class="card"></section>
     <section id="panel-scoring" role="tabpanel" aria-labelledby="tab-scoring" class="card" hidden></section>
     <section id="panel-stats"   role="tabpanel" aria-labelledby="tab-stats"   class="card" hidden></section>
+    <section id="panel-2024"   role="tabpanel" aria-labelledby="tab-stats"   class="card" hidden></section>
   </div>
 
 <script>
@@ -63,7 +65,8 @@
   const external = {
     matches: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/next_round?page_id=11881230126622457285",
     scoring: "https://www.golfgenius.com/leagues/11881229955629071492/widgets/customized_tournament_results?page_id=11881230128635723207&no_player_profile=true&no_print_button=true",
-    stats:   "https://www.golfgenius.com/leagues/11881229955629071492/widgets/player_stats?page_id=11881230129642356168"
+    stats:   "https://www.golfgenius.com/leagues/11881229955629071492/widgets/player_stats?page_id=11881230129642356168",
+    2024:    "https://www.golfgenius.com/leagues/10898143129479691694/widgets/customized_tournament_results?page_id=10935949364488584610'
   };
 
   const mounted = new Set();
