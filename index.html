@@ -126,6 +126,9 @@
       const opted = OneSignal.User.PushSubscription.optedIn === true;
       el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
     }
+
+
+    
     function refreshUI(OneSignal) {
       const subBtn  = document.getElementById('btn-subscribe');
       const diagBtn = document.getElementById('btn-diagnostics');
@@ -167,6 +170,60 @@
               origin: location.origin
             });
           } catch {}
+<script>
+  window.addEventListener('load', () => {
+    if (window.__OS_INITED__) return;
+    window.__OS_INITED__ = true;
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        await OneSignal.init({
+          appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+          serviceWorkerPath: '/OneSignalSDKWorker.js',
+          serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
+        });
+
+        /* >>> ADD THIS BLOCK (guarded duplicate of the FG path) <<< */
+        if (!window.__OS_FG_BRIDGE__) {
+          window.__OS_FG_BRIDGE__ = true;
+          OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+            try {
+              const n = evt?.notification || {};
+              // forward into our page logger; this triggers Recent Alerts immediately
+              window.postMessage({
+                channel: 'pheasant-inbox',
+                payload: {
+                  title: n.title || '',
+                  body:  n.body  || '',
+                  data:  n.data  || {},
+                  at: Date.now()
+                }
+              }, '*');
+              // keep the iOS banner visible
+              if (evt?.preventDefault) evt.preventDefault();
+              if (n?.display) n.display();
+            } catch (e) {}
+          });
+
+          OneSignal.Notifications.addEventListener('click', (evt) => {
+            try {
+              const n = evt?.notification || {};
+              window.postMessage({
+                channel: 'pheasant-inbox',
+                payload: {
+                  title: n.title || '',
+                  body:  n.body  || '',
+                  data:  n.data  || {},
+                  at: Date.now()
+                }
+              }, '*');
+            } catch (e) {}
+          });
+        }
+        /* <<< END ADDED BLOCK >>> */
+
+        // (keep the rest of your code: tags, UI listeners, buttons, refreshUI etc.)
 
           // Keep only UI listeners here. (The page-level notification events are handled in assets/inbox.js)
           OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
