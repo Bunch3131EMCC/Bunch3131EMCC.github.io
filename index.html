@@ -5,27 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ffffff" />
 
-  <!-- Name shown on iOS Add-to-Home-Screen -->
   <meta name="apple-mobile-web-app-title" content="Pheasant App" />
   <meta name="application-name" content="Pheasant App" />
   <title>Pheasant App</title>
 
-  <!-- Manifest -->
   <link rel="manifest" href="manifest.json?v=6" />
-
-  <!-- Favicon (fallback). -->
   <link rel="icon" href="assets/icon_20pt@3x.png?v=6" sizes="32x32" />
 
   <!-- iOS / Safari icons -->
-  <link rel="apple-touch-icon" sizes="40x40" href="assets/icon_20pt@2x.png?v=6">
-  <link rel="apple-touch-icon" sizes="60x60" href="assets/icon_20pt@3x.png?v=6">
-  <link rel="apple-touch-icon" sizes="58x58" href="assets/icon_29pt@2x.png?v=6">
-  <link rel="apple-touch-icon" sizes="87x87" href="assets/icon_29pt@3x.png?v=6">
-  <link rel="apple-touch-icon" sizes="80x80" href="assets/icon_40pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="40x40"  href="assets/icon_20pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="60x60"  href="assets/icon_20pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="58x58"  href="assets/icon_29pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="87x87"  href="assets/icon_29pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="80x80"  href="assets/icon_40pt@2x.png?v=6">
   <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_40pt@3x.png?v=6">
   <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_60pt@2x.png?v=6">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icon_60pt@3x.png?v=6">
-  <link rel="apple-touch-icon" sizes="76x76" href="assets/icon_76pt@1x.png?v=6">
+  <link rel="apple-touch-icon" sizes="76x76"  href="assets/icon_76pt@1x.png?v=6">
   <link rel="apple-touch-icon" sizes="152x152" href="assets/icon_76pt@2x.png?v=6">
   <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=6">
   <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=6">
@@ -36,17 +32,9 @@
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
     .wrap{max-width:860px;margin:0 auto;padding:24px}
     header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-   .logo {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
 
-.logo img {
-  width:60px;   /* adjust size if you want it bigger (e.g. 60px) */
-  height:60px;
-  border-radius:14px;  /* optional, keeps slightly rounded corners */
-}
+    .logo{display:flex;align-items:center;justify-content:center}
+    .logo img{width:60px;height:60px;border-radius:14px}
 
     h1{margin:0;font-size:28px;font-weight:800}
     .muted{color:var(--muted)}
@@ -57,26 +45,10 @@
     .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px}
     a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
 
-/* Schedule card typography */
-#schedule-today .sched-heading {
-  font-size:18px !important;
-  font-weight:800 !important;
-  margin:0 0 8px 0 !important;
-}
-
-#schedule-today .sched-sub {
-  font-size:14px !important;
-  font-weight:600 !important;
-  margin:4px 0 !important;
-}
-
-#schedule-today .sched-item {
-  font-size:14px !important;
-  line-height:1.3 !important;
-}
-
-
-   
+    /* Schedule card typography */
+    #schedule-today .sched-heading { font-size:18px !important; font-weight:800 !important; margin:0 0 8px 0 !important; }
+    #schedule-today .sched-sub     { font-size:14px !important; font-weight:600 !important; margin:4px 0 !important; }
+    #schedule-today .sched-item    { font-size:14px !important; line-height:1.3 !important; }
   </style>
 </head>
 
@@ -90,38 +62,30 @@
       </div>
     </header>
 
-<!-- Push subscribe card -->
-<div class="card" id="push-card">
-  <div class="row">
-    <button id="btn-subscribe" class="btn">Enable Notifications</button>
-    <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
-  </div>
-  <p id="ios-instructions" class="muted" style="margin:10px 0 0">
-    iPhone: open from the <em>Home Screen icon</em> (Add to Home Screen) before enabling notifications.
-  </p>
-  <div id="push-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
-</div>
+    <!-- Push subscribe card -->
+    <div class="card" id="push-card">
+      <div class="row">
+        <button id="btn-subscribe" class="btn">Enable Notifications</button>
+        <button id="btn-diagnostics" class="btn alt">Diagnostics</button>
+      </div>
+      <p id="ios-instructions" class="muted" style="margin:10px 0 0">
+        iPhone: open from the <em>Home Screen icon</em> (Add to Home Screen) before enabling notifications.
+      </p>
+      <div id="push-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
+    </div>
 
-  </div> <!-- <-- close the .row BEFORE the text below -->
-
-  <p id="ios-instructions" class="muted" style="margin:10px 0 0">
-    iPhone: open from the <em>Home Screen icon</em> (Add to Home Screen) before enabling notifications.
-  </p>
-  <div id="push-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
-</div>
-
-<!-- Debug tools (temporary) -->
-<div class="card" id="debug-tools">
-  <h3 style="margin:0 0 8px 0;">Debug Tools</h3>
-  <div class="row">
-    <button id="dbg-page-msg" class="btn alt">Test Page → Inbox</button>
-    <button id="dbg-sw-msg" class="btn alt">Test SW → Inbox</button>
-    <button id="dbg-os-fg" class="btn alt">Simulate OS Foreground</button>
-  </div>
-  <div class="muted" style="font-size:12px;margin-top:8px;">
-    Use these to verify logging paths. Remove this card once everything works.
-  </div>
-</div>
+    <!-- Debug tools (temporary; separate so they don't hide with the push card) -->
+    <div class="card" id="debug-tools">
+      <h3 style="margin:0 0 8px 0;">Debug Tools</h3>
+      <div class="row">
+        <button id="dbg-page-msg" class="btn alt">Test Page → Inbox</button>
+        <button id="dbg-sw-msg" class="btn alt">Test SW → Inbox</button>
+        <button id="dbg-os-fg" class="btn alt">Simulate OS Foreground</button>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:8px;">
+        Remove this card once things look good.
+      </div>
+    </div>
 
     <!-- Notifications Inbox (home summary) -->
     <div class="card" id="recent-alerts" style="margin-top:16px;"></div>
@@ -129,16 +93,14 @@
     <!-- Schedule summary -->
     <div class="card" id="schedule-today" style="margin-top:16px;"></div>
 
- <!-- Event Hub link -->
- <div class="card" style="margin-top:16px;">
-  <h3 style="margin:0 0 8px 0;">Event Hub</h3>
-  <a class="pill" href="gg-embeds.html?v=4" style="display:inline-block;margin-top:10px;">
-    Matches · Scoring · Stats
-  </a>
-</div>
+    <!-- Event Hub link -->
+    <div class="card" style="margin-top:16px;">
+      <h3 style="margin:0 0 8px 0;">Event Hub</h3>
+      <a class="pill" href="gg-embeds.html?v=4" style="display:inline-block;margin-top:10px;">
+        Matches · Scoring · Stats
+      </a>
+    </div>
 
-
-    
     <!-- SW status (debug helper) -->
     <div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
   </div>
@@ -146,106 +108,70 @@
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js?v=6"></script>
 
-<!-- OneSignal init + UI logic (guarded) -->
-<script>
+  <!-- OneSignal init + UI logic (guarded) -->
+  <script>
+    window.__OS_INITED__ = window.__OS_INITED__ || false;
+    const log = (...a) => console.log('[Pheasant]', ...a);
 
-  
-  // Prevent double init if the page re-renders or scripts run twice
-  window.__OS_INITED__ = window.__OS_INITED__ || false;
-
-  const log = (...a) => console.log('[Pheasant]', ...a);
-
-  function granted(OneSignal) {
-    const p = OneSignal.Notifications.permission;
-    return p === true || p === 'granted';
-  }
-  function showStatus(OneSignal) {
-    const el = document.getElementById('push-status');
-    if (!el) return;
-    const supported = OneSignal.Notifications.isPushSupported();
-    const perm  = OneSignal.Notifications.permission;
-    const id    = OneSignal.User.PushSubscription.id || null;
-    const opted = OneSignal.User.PushSubscription.optedIn === true;
-    el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
-  }
-  function refreshUI(OneSignal) {
-    const subBtn  = document.getElementById('btn-subscribe');
-    const diagBtn = document.getElementById('btn-diagnostics');
-    const iosInfo = document.getElementById('ios-instructions');
-    const card    = document.getElementById('push-card');
-    if (!subBtn || !diagBtn || !card) return;
-
-    const supported = OneSignal.Notifications.isPushSupported();
-    const ok = supported && granted(OneSignal) && OneSignal.User.PushSubscription.optedIn === true && !!OneSignal.User.PushSubscription.id;
-
-    card.style.display = ok ? 'none' : '';
-    if (!ok) {
-      subBtn.style.display = '';
-      diagBtn.style.display = '';
-      if (iosInfo) iosInfo.style.display = '';
+    function granted(OneSignal) {
+      const p = OneSignal.Notifications.permission;
+      return p === true || p === 'granted';
     }
-    showStatus(OneSignal);
-  }
+    function showStatus(OneSignal) {
+      const el = document.getElementById('push-status');
+      if (!el) return;
+      const supported = OneSignal.Notifications.isPushSupported();
+      const perm  = OneSignal.Notifications.permission;
+      const id    = OneSignal.User.PushSubscription.id || null;
+      const opted = OneSignal.User.PushSubscription.optedIn === true;
+      el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
+    }
+    function refreshUI(OneSignal) {
+      const subBtn  = document.getElementById('btn-subscribe');
+      const diagBtn = document.getElementById('btn-diagnostics');
+      const iosInfo = document.getElementById('ios-instructions');
+      const card    = document.getElementById('push-card');
+      if (!subBtn || !diagBtn || !card) return;
 
-  window.addEventListener('load', () => {
-    if (window.__OS_INITED__) return;        // <-- guard
-    window.__OS_INITED__ = true;
+      const supported = OneSignal.Notifications.isPushSupported();
+      const ok = supported && granted(OneSignal) &&
+                 OneSignal.User.PushSubscription.optedIn === true &&
+                 !!OneSignal.User.PushSubscription.id;
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function (OneSignal) {
-      try {
-        await OneSignal.init({
-          appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
-          serviceWorkerPath: '/OneSignalSDKWorker.js',
-          serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
-        });
+      card.style.display = ok ? 'none' : '';
+      if (!ok) {
+        subBtn.style.display = '';
+        diagBtn.style.display = '';
+        if (iosInfo) iosInfo.style.display = '';
+      }
+      showStatus(OneSignal);
+    }
 
-        // Tag the context once (helps you target only the PWA)
+    window.addEventListener('load', () => {
+      if (window.__OS_INITED__) return;
+      window.__OS_INITED__ = true;
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function (OneSignal) {
         try {
-          await OneSignal.User.addTags({
-            channel: (window.matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'browser'),
-            origin: location.origin
+          await OneSignal.init({
+            appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
           });
-        } catch {}
 
-        // ---- PAGE BRIDGE: normalize and forward events into the page
-        const forwardToInbox = (evt) => {
+          // Context tag (handy for targeting the PWA vs. browser)
           try {
-            const n = evt?.notification || {};
-            const payload = {
-              title: n.title || '',
-              body:  n.body  || '',
-              data:  n.data  || {},
-              at: Date.now()
-            };
-            window.postMessage({ channel: 'pheasant-inbox', payload }, '*');
+            await OneSignal.User.addTags({
+              channel: (window.matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'browser'),
+              origin: location.origin
+            });
           } catch {}
-        };
 
-        // Prevent wiring listeners twice if something re-calls this block
-        if (!window.__OS_LISTENERS__) {
-          window.__OS_LISTENERS__ = true;
-
-          // Keep your UI listeners
+          // Keep only UI listeners here. (The page-level notification events are handled in assets/inbox.js)
           OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
           OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
 
-          // Foreground path: take control on iOS, then display manually so banner still shows
-          OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
-            try {
-              forwardToInbox(evt);                 // <-- send to inbox.js
-              if (evt?.preventDefault) evt.preventDefault();
-              const n = evt?.notification;
-              if (n?.display) n.display();
-            } catch {}
-          });
-
-          // Click path: when a notif is tapped while app is open
-          OneSignal.Notifications.addEventListener('click', (evt) => {
-            try { forwardToInbox(evt); } catch {}
-          });
-
-          // Buttons
           const subBtn  = document.getElementById('btn-subscribe');
           const diagBtn = document.getElementById('btn-diagnostics');
           if (subBtn) {
@@ -273,74 +199,20 @@
               showStatus(OneSignal);
             };
           }
+
+          refreshUI(OneSignal);
+          setTimeout(() => refreshUI(OneSignal), 500);
+          setTimeout(() => refreshUI(OneSignal), 2000);
+        } catch (e) {
+          console.error('init error', e);
+          alert('Init error: ' + (e?.message || e));
         }
-
-        refreshUI(OneSignal);
-        setTimeout(() => refreshUI(OneSignal), 500);
-        setTimeout(() => refreshUI(OneSignal), 2000);
-      } catch (e) {
-        console.error('init error', e);
-        alert('Init error: ' + (e?.message || e));
-      }
-    });
-  });
-</script>
-
-<script>
-  // Page → Inbox test (should add a new row in Recent Alerts instantly)
-  document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
-    window.postMessage({
-      channel: 'pheasant-inbox',
-      payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
-    }, '*');
-  });
-
- 
-  // SW → Inbox test (use the channels the SW handles)
-  document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
-    if (!('serviceWorker' in navigator)) return alert('No SW');
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      reg?.active?.postMessage({ channel: 'pheasant-inbox-hello' });
-      reg?.active?.postMessage({ channel: 'pheasant-inbox-fetch' });
-      alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
-    } catch (e) {
-      alert('SW post error: ' + (e?.message || e));
-    }
-  });
-
-
-
-  // Simulate the OneSignal foreground event (uses the same forwardToInbox path)
-  document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
-    const fakeEvt = { notification: { title: 'DBG OS fg', body: 'simulated foreground', data: {} } };
-    // Same shape your forwardToInbox expects
-    window.postMessage({ channel: 'pheasant-inbox', payload: {
-      title: fakeEvt.notification.title,
-      body: fakeEvt.notification.body,
-      data: fakeEvt.notification.data,
-      at: Date.now()
-    }}, '*');
-  });
-</script>
-
-  <!-- Inbox (v11) -->
-  <script type="module" src="assets/inbox.js?v=13"></script>
-  <!-- Fallback -->
-  <script>
-    window.addEventListener('load', () => {
-      const el = document.getElementById('recent-alerts');
-      if (el && !el.innerHTML.trim()) {
-        el.innerHTML = `
-          <h3 style="margin:0 0 8px 0;">Recent Alerts</h3>
-          <div class="muted">No recent alerts yet.</div>
-          <div style="margin-top:10px;">
-            <a class="pill" href="inbox.html">View All Alerts</a>
-            <button id="clear-inbox" class="btn alt" style="margin-left:8px;padding:6px 10px;font-size:14px;">Clear</button>
-          </div>`;
-      }
+      });
     });
   </script>
+
+  <!-- Home “Recent Alerts” + bridge code -->
+  <script type="module" src="assets/inbox.js?v=14"></script>
 
   <!-- Schedule -->
   <script defer src="assets/schedule.js?v=15"></script>
@@ -374,47 +246,42 @@
     }
   </script>
 
+  <!-- Debug handlers (separate card so they persist after subscribe) -->
   <script>
-  // Prefer the controller; fallback to reg.active, with small retries (iOS can be slow)
-  async function postToSW(msg) {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage(msg);
-      return true;
-    }
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      if (reg && reg.active) {
-        reg.active.postMessage(msg);
+    async function postToSW(msg) {
+      if (navigator.serviceWorker?.controller) {
+        navigator.serviceWorker.controller.postMessage(msg);
         return true;
       }
-    } catch {}
-    return false;
-  }
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg?.active) { reg.active.postMessage(msg); return true; }
+      } catch {}
+      return false;
+    }
 
-  // Page → Inbox (should instantly add an entry)
-  document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
-    window.postMessage({
-      channel: 'pheasant-inbox',
-      payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
-    }, '*');
-  });
+    document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
+      }, '*');
+    });
 
-  // SW → Inbox (bulletproof ping; your SW echoes ANY message as "SW pong")
-  document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
-    const msg = { channel: 'pheasant-inbox-test', note: 'manual ping' };
-    let ok = await postToSW(msg);
-    if (!ok) { await new Promise(r => setTimeout(r, 300)); ok = await postToSW(msg); }
-    if (!ok) { await new Promise(r => setTimeout(r, 800)); ok = await postToSW(msg); }
-    if (!ok) alert('Could not reach Service Worker. Try reloading once.');
-    else alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
-  });
+    document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
+      const msg = { channel: 'pheasant-inbox-test', note: 'manual ping' };
+      let ok = await postToSW(msg);
+      if (!ok) { await new Promise(r => setTimeout(r, 300)); ok = await postToSW(msg); }
+      if (!ok) { await new Promise(r => setTimeout(r, 800)); ok = await postToSW(msg); }
+      if (!ok) alert('Could not reach Service Worker. Try reloading once.');
+      else alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
+    });
 
-  // Simulate the OneSignal foreground event (uses page bridge)
-  document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
-    const fake = { title: 'DBG OS fg', body: 'simulated foreground', data: {} };
-    window.postMessage({ channel: 'pheasant-inbox', payload: { ...fake, at: Date.now() } }, '*');
-  });
-</script>
-
+    document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG OS fg', body: 'simulated foreground', at: Date.now() }
+      }, '*');
+    });
+  </script>
 </body>
 </html>
