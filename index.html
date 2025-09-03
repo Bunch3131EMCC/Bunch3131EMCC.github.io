@@ -248,6 +248,39 @@ if (!window.__OS_FG_BRIDGE__) {
   <!-- Inbox module -->
   <script type="module" src="assets/inbox.js?v=18"></script>
 
+  <!-- Time-travel shim: honors ?now=... without touching schedule.js -->
+  <script>
+    (() => {
+      const q = new URLSearchParams(location.search).get('now');
+      if (!q) return;
+
+      // Accepts: ISO (with/without TZ), epoch seconds, epoch ms
+      const parseNow = (v) => {
+        if (!v) return null;
+        if (/^\d{10,13}$/.test(v)) return v.length === 13 ? Number(v) : Number(v) * 1000;
+        const d = new Date(v);
+        return isNaN(d) ? null : d.getTime();
+      };
+
+      const ms = parseNow(q);
+      if (!ms) return;
+
+      const RealDate = Date;
+      class FakeDate extends RealDate {
+        constructor(...args) {
+          super(args.length ? args[0] : ms);
+        }
+        static now() { return ms; }
+        static UTC(...a) { return RealDate.UTC(...a); }
+        static parse(s) { return RealDate.parse(s); }
+      }
+      // Time-travel on ✅
+      window.Date = FakeDate;
+      console.log('[Pheasant] Time-travel →', new RealDate(ms).toString());
+    })();
+  </script>
+
+  
   <!-- Schedule -->
   <script defer src="assets/schedule.js?v=15"></script>
   <script>
