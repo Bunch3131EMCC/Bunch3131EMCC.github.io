@@ -187,6 +187,24 @@ addBtn.addEventListener('click', ()=>{
 renumBtn.addEventListener('click', ()=>{
   teeData.forEach((t,i)=> t.label = String(i+1));
   renderPins();
+  // === GPS Locate on mobile/desktop ===
+map.locate({ setView: true, maxZoom: 17 });
+
+map.on('locationfound', (e) => {
+  L.circleMarker(e.latlng, {
+    radius: 6,
+    color: 'blue',
+    fillColor: 'blue',
+    fillOpacity: 0.7
+  })
+  .bindPopup("You are here")
+  .addTo(map);
+});
+
+map.on('locationerror', () => {
+  console.log("Location access denied or unavailable.");
+});
+
 });
 </script>
 </body>
