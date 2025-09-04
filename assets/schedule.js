@@ -86,7 +86,7 @@ async function renderScheduleSummary(mountId, jsonUrl) {
           <div class="muted" style="margin-top:6px;font-size:12px;">First event · ${fmt12(
             first.time
           )} — ${first.title}</div>
-          <<div class="center-line">
+          <div class="center-line">
   <a class="pill" href="schedule.html">View Full Schedule</a>
 </div>
 
