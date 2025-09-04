@@ -69,9 +69,10 @@ async function renderScheduleSummary(mountId, jsonUrl) {
                 .join("")}</ul>`
             : ""
         }
-        <div style="margin-top:16px; text-align:center;">
+        <div class="center-line">
   <a class="pill" href="schedule.html">View Full Schedule</a>
 </div>
+
 
       </div>`;
     } else {
@@ -85,17 +86,19 @@ async function renderScheduleSummary(mountId, jsonUrl) {
           <div class="muted" style="margin-top:6px;font-size:12px;">First event · ${fmt12(
             first.time
           )} — ${first.title}</div>
-          <div style="margin-top:16px; text-align:center;">
+          <<div class="center-line">
   <a class="pill" href="schedule.html">View Full Schedule</a>
 </div>
+
 
         </div>`;
       } else {
         html += `<div class="card" style="margin:8px 0;">
           <div class="muted" style="font-size:12px;">No upcoming dates.</div>
-          <div style="margin-top:16px; text-align:center;">
+          <div class="center-line">
   <a class="pill" href="schedule.html">View Full Schedule</a>
 </div>
+
 
         </div>`;
       }
