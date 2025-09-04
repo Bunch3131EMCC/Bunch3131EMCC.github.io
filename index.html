@@ -251,21 +251,44 @@ if (!window.__OS_FG_BRIDGE__) {
           OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
 
           const subBtn  = document.getElementById('btn-subscribe');
-          const diagBtn = document.getElementById('btn-diagnostics');
-          if (subBtn) {
-            subBtn.onclick = async () => {
-              try {
-                log('optIn click');
-                await OneSignal.User.PushSubscription.optIn();
-                await OneSignal.User.addTag('players','true');
-              } catch (e) {
-                console.error('optIn error', e);
-                alert('Subscribe error: ' + (e?.message || e));
-              } finally {
-                refreshUI(OneSignal);
-              }
-            };
-          }
+const diagBtn = document.getElementById('btn-diagnostics');
+if (subBtn) {
+  subBtn.onclick = async () => {
+    try {
+      log('optIn click');
+      await OneSignal.User.PushSubscription.optIn();
+
+      // Tag (optional)
+      try { await OneSignal.User.addTag('players','true'); } catch {}
+
+      // Optimistic hide immediately
+      const card = document.getElementById('push-card');
+      if (card) card.hidden = true;
+
+      // Re-check a few times in case OneSignal state lags
+      const retries = [150, 600, 2000];
+      for (const ms of retries) {
+        await new Promise(r => setTimeout(r, ms));
+        refreshUI(OneSignal);
+        const ok =
+          OneSignal?.Notifications?.isPushSupported?.() === true &&
+          (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
+          OneSignal?.User?.PushSubscription?.optedIn === true &&
+          !!OneSignal?.User?.PushSubscription?.id;
+        if (ok) break;
+      }
+    } catch (e) {
+      console.error('optIn error', e);
+      alert('Subscribe error: ' + (e?.message || e));
+      // If anything failed, show the card again so they can retry
+      const card = document.getElementById('push-card');
+      if (card) card.hidden = false;
+    } finally {
+      refreshUI(OneSignal);
+    }
+  };
+}
+
           if (diagBtn) {
             diagBtn.onclick = async () => {
               const supported = OneSignal.Notifications.isPushSupported();
@@ -401,86 +424,7 @@ if (!window.__OS_FG_BRIDGE__) {
   setInterval(updateVisibility, 30 * 1000); // keep state fresh if page stays open
 })();
 </script>
-<script>
-(function(){
-  const CARD_ID = 'push-card';
-  const BTN_ID  = 'btn-subscribe';
-  const LS_KEY  = 'push_subbed'; // local flag so we remember across reloads
 
-  const card = document.getElementById(CARD_ID);
-  const btn  = document.getElementById(BTN_ID);
-
-  if (!card || !btn) return;
-
-  function hideCard(){ card.setAttribute('hidden',''); }
-  function showCard(){ card.removeAttribute('hidden'); }
-
-  async function hasActiveSubscription(){
-    // If there’s already a SW push subscription, we’re done
-    try {
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
-      return !!sub;
-    } catch { return false; }
-  }
-
-  async function updateFromState(){
-    // Hide if: Notification permission granted OR we see an existing push sub OR localstorage flag set
-    const granted = (('Notification' in window) && Notification.permission === 'granted');
-    const subbed  = await hasActiveSubscription();
-    const flagged = localStorage.getItem(LS_KEY) === '1';
-
-    if (granted || subbed || flagged) hideCard();
-    else showCard();
-  }
-
-  // When user clicks "Enable Notifications"
-  btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    try {
-      // 1) Request permission (browser-level)
-      if ('Notification' in window && Notification.permission !== 'granted') {
-        const perm = await Notification.requestPermission();
-        if (perm !== 'granted') { showCard(); return; }
-      }
-
-      // 2) (Optional but recommended) ensure/confirm a PushManager subscription exists
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
-        const reg = await navigator.serviceWorker.ready;
-        let sub = await reg.pushManager.getSubscription();
-        if (!sub) {
-          // Replace with your actual applicationServerKey if you use VAPID
-          // const vapidKey = urlBase64ToUint8Array('<your public key>');
-          sub = await reg.pushManager.subscribe({ userVisibleOnly: true /*, applicationServerKey: vapidKey */ });
-        }
-      }
-
-      // Mark as subscribed and hide
-      localStorage.setItem(LS_KEY, '1');
-      hideCard();
-    } catch (e) {
-      console.log('[push] enable failed:', e);
-      showCard(); // keep it visible so they can retry
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  // Listen for a confirmation from your SW (if you postMessage on subscribe there)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', (evt) => {
-      if (evt.data && evt.data.type === 'PUSH_SUBSCRIBED') {
-        localStorage.setItem(LS_KEY, '1');
-        hideCard();
-      }
-    });
-  }
-
-  // On load, set the correct visibility
-  updateFromState();
-})();
-</script>
 
 </body>
 </html>
