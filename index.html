@@ -82,6 +82,12 @@
     <!-- Schedule summary -->
     <div class="card" id="schedule-today" style="margin-top:16px;"></div>
 
+    <!-- Par 3 Map button (visibility controlled by JS) -->
+    <a id="btn-par3-map" class="btn" href="/par3-map.html" style="display:none">
+      Par 3 Map
+    </a>
+
+    
     <!-- Event Hub link -->
     <div class="card" style="margin-top:16px;">
       <h3 style="margin:0 0 8px 0;">Event Hub</h3>
@@ -318,5 +324,44 @@ if (!window.__OS_FG_BRIDGE__) {
       }, '*');
     });
   </script>
+
+  <script>
+(function(){
+  const BTN_ID = 'btn-par3-map';
+
+  // === SET YOUR START/STOP TIMES HERE ===
+  // Leave as '' to make the button always visible.
+  // Format: 'YYYY-MM-DDTHH:MM' in local time.
+  const START_TIME = '';  // e.g. '2025-09-12T09:30'
+  const END_TIME   = '';  // e.g. '2025-09-12T15:00'
+  // ======================================
+
+  const btn = document.getElementById(BTN_ID);
+  if (!btn) return;
+
+  function parseTime(str){
+    if (!str) return null;
+    const d = new Date(str);
+    return isFinite(d.getTime()) ? d : null;
+  }
+
+  const start = parseTime(START_TIME);
+  const end   = parseTime(END_TIME);
+
+  function withinWindow(now){
+    // If either is missing, default to visible (always on)
+    if (!start || !end) return true;
+    return now >= start && now <= end;
+  }
+
+  function updateVisibility(){
+    btn.style.display = withinWindow(new Date()) ? '' : 'none';
+  }
+
+  updateVisibility();
+  setInterval(updateVisibility, 30 * 1000); // keep state fresh if page stays open
+})();
+</script>
+
 </body>
 </html>
