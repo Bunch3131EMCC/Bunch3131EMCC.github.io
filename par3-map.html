@@ -7,45 +7,48 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <style>
-    html,body{height:100%;margin:0}
+  /* Base (copied from Schedule head) */
+  :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+  .wrap{max-width:860px;margin:0 auto;padding:24px}
+  .muted{color:var(--muted)}
+  .card{border:1px solid var(--border);border-radius:14px;padding:16px;background:#fff}
+  a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
 
-    /* ---- begin (optional) nav shim — remove if your global styles already cover these) ---- */
-    .topbar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5e7eb}
-    .topbar .wrap{max-width:1100px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
-    .brand{font-weight:700;text-decoration:none;color:#111827}
-    .nav{display:flex;gap:8px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:10px;border:1px solid #e5e7eb;text-decoration:none;color:#111827}
-    .btn-ghost{background:#fff}
-    /* ---- end (optional) nav shim ---- */
+  /* Header (simple, clean—like your Schedule page) */
+  .topbar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border)}
 
-    /* Map fills everything below the header (assume ~56px height) */
-    :root { --topbar-h: 56px; } /* tweak if your header is taller/shorter */
-    #map{
-      position:fixed;
-      top:var(--topbar-h);
-      left:0; right:0; bottom:0;
-      width:100vw;
-    }
+  /* Map fills everything under the header */
+  :root { --topbar-h: 72px; } /* ≈ .wrap 24px padding + content; adjust if needed */
+  #map{
+    position:fixed;
+    top:var(--topbar-h);
+    left:0; right:0; bottom:0;
+    width:100vw;
+  }
 
-    /* Red numbered pin */
-    .leaflet-div-icon{
-      background:#ef4444;border:2px solid #991b1b;border-radius:14px;width:28px;height:28px;
-      display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35)
-    }
-    .pin-num{font-weight:800;color:#fff;font-size:13px}
-  </style>
+  /* Leaflet pin styling (unchanged) */
+  .leaflet-div-icon{
+    background:#ef4444;border:2px solid #991b1b;border-radius:14px;width:28px;height:28px;
+    display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35)
+  }
+  .pin-num{font-weight:800;color:#fff;font-size:13px}
+</style>
+
 </head>
 <body>
 
   <!-- Top navigation (matches Schedule/Event Hub) -->
-  <header class="topbar">
-    <div class="wrap">
-      <a href="/" class="brand">Pheasant Invitational</a>
-      <nav class="nav">
-        <a href="/" class="btn btn-ghost">← Back</a>
-      </nav>
-    </div>
-  </header>
+ <header class="topbar">
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div style="font-weight:700">Pheasant App · Par-3 Map</div>
+    <nav>
+      <a href="/" class="pill">← Home</a>
+    </nav>
+  </div>
+</header>
+
 
   <!-- Map -->
   <div id="map"></div>
