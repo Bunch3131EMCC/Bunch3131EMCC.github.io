@@ -6,41 +6,31 @@
 <title>Pheasant Invitational — Hub</title>
 <meta name="theme-color" content="#ffffff" />
 <style>
-  :root { --bg:#ffffff; --card:#ffffff; --fg:#111827; --muted:#64748b; --accent:#2563eb; --border:#e5e7eb; }
+  :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  .topbar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 12px}
-  .back{background:none;border:0;color:#111827;font-size:20px;line-height:1;cursor:pointer}
-  .logo{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);overflow:hidden;display:grid;place-items:center;background:#fff}
-  .logo img{width:100%;height:100%;object-fit:contain}
-  .title{font-weight:800;font-size:16px}
-  .tabs{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg)}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+  .wrap{max-width:860px;margin:0 auto;padding:24px}
+  .muted{color:var(--muted)}
+  .card{border:1px solid var(--border);border-radius:14px;padding:16px;background:#fff}
+  a.pill{
+    text-decoration:none;
+    text-align:center;
+    padding:10px 12px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#fff;
+    color:#000;
+  }
+  .tabs{display:flex;gap:8px;padding:10px 0;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg)}
   .tab{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#f8fafc;color:#0f172a;cursor:pointer;font-weight:600}
-  .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-  .wrap{padding:12px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-height:60vh;display:flex;flex-direction:column}
-  [hidden]{ display:none !important; }
+  .tab[aria-selected="true"]{background:#2563eb;border-color:#2563eb;color:#fff}
   .iframe-fluid{position:relative;width:100%;min-height:70vh;flex:1}
   .iframe-fluid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .panel-footer{margin-top:12px;text-align:right}
   .btn-small{font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:#f1f5f9;color:#0f172a;text-decoration:none;font-weight:500}
   .btn-small:hover{background:#e2e8f0}
-/* Match Schedule page spacing */
-.wrap{max-width:860px;margin:0 auto;padding:24px}
-
-/* Pill button style */
-a.pill{
-  text-decoration:none;
-  text-align:center;
-  padding:10px 12px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  background:#fff;
-  color:#000;
-}
-
-  
 </style>
+
 </head>
 <body>
 
