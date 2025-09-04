@@ -3,209 +3,99 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Par-3 Tees Map</title>
+  <title>Par‑3 Map (Viewer Only — with Pins)</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <style>
-    :root{--bg:#0b1220;--fg:#e6e9ef;--muted:#92a0b3;--accent:#ef4444;--card:#121a2a;--border:#223049}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    .wrap{display:grid;grid-template-rows:auto 1fr; height:100vh;}
-    header{display:flex;gap:.75rem;align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,#0d1729,#0a1120)}
-    h1{font-size:16px;margin:0;font-weight:600}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
-    .controls input, .controls select, .controls button, .controls textarea{background:#0f1a2e;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:14px}
-    .controls button{background:var(--accent);color:#fff;border:none;font-weight:700;box-shadow:0 2px 10px rgba(239,68,68,.35)}
-    .controls button.alt{background:#0f1a2e;color:var(--fg);border:1px solid var(--border);box-shadow:none}
-    .controls .note{color:var(--muted);font-size:12px;padding:0 8px}
-    #map{height:100%; min-height: 480px;}
-    .leaflet-div-icon{background:#ef4444;border:2px solid #991b1b;border-radius:14px; width:28px;height:28px; display:grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.35)}
-    .pin-num{font-weight:800; color:#fff; font-size:13px}
-    details{margin-left:8px}
-    summary{cursor:pointer;color:var(--muted)}
-    textarea{width:320px;height:90px}
+    html,body{height:100%;margin:0}
+    #map{height:100vh;width:100vw}
+    /* Red numbered pin */
+    .leaflet-div-icon{background:#ef4444;border:2px solid #991b1b;border-radius:14px;width:28px;height:28px;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+    .pin-num{font-weight:800;color:#fff;font-size:13px}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>Par‑3 Tees Map</h1>
-    <div class="controls">
-      <select id="basemap">
-        <option value="osm">OSM (Map)</option>
-        <option value="sat" selected>Esri World Imagery (Satellite)</option>
-      </select>
-      <input id="goto" placeholder="Fly to: lat, lng" />
-      <button id="fly">Go</button>
-      <button class="alt" id="fit">Fit to all pins</button>
-      <button id="addPin">Add pin</button>
-      <button id="renumber" class="alt">Renumber 1–N</button>
-      <button id="export">Export JSON</button>
-      <details>
-        <summary>Import JSON</summary>
-        <div style="display:flex;gap:8px;align-items:start">
-          <textarea id="importTxt" placeholder='[{"label":"1","lat":38.5415,"lng":-121.6898,"note":"Front of 18 tee."}]'></textarea>
-          <button id="doImport">Load</button>
-        </div>
-      </details>
-      <span class="note">Tip: drag pins to fine‑tune on the fly.</span>
-    </div>
-  </header>
   <div id="map"></div>
-</div>
 
-<script>
-// === Basic map ===
-const map = L.map('map', { zoomControl: true, preferCanvas: true }).setView([38.5415,-121.6898], 16);
-setTimeout(() => map.invalidateSize(), 0);
+  <script>
+  // === Map (viewer-only) ===
+  const COURSE_CENTER = [38.5415, -121.6898]; // El Macero default center
 
-// Basemaps
-const layers = {
-  osm: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20, attribution: '&copy; OpenStreetMap' }),
-  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri, Maxar, Earthstar Geographics' })
-};
-layers.sat.addTo(map); // default satellite
+  const map = L.map('map', { zoomControl: true, preferCanvas: true })
+    .setView(COURSE_CENTER, 16);
 
-// Basemap toggle
-const baseSel = document.getElementById('basemap');
-baseSel.value = 'sat'; // reflect default in UI
-baseSel.addEventListener('change', () => {
-  const v = baseSel.value;
-  Object.values(layers).forEach(l => map.removeLayer(l));
-  layers[v].addTo(map);
-});
+  // Satellite by default
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Esri, Maxar, Earthstar Geographics'
+  }).addTo(map);
 
-// Numbered red pin factory
-function numIcon(n){
-  return L.divIcon({
-    className: 'leaflet-div-icon',
-    html: `<span class="pin-num">${n}</span>`,
-    iconSize: [28,28], iconAnchor: [14,28], popupAnchor: [0,-24]
-  });
-}
+  // Ensure layout is measured after first paint
+  setTimeout(() => map.invalidateSize(), 0);
 
-// Final teeData (pinned positions)
-let teeData = [
-  { "label": "1",  "lat": 38.54279952260164,  "lng": -121.68821275234224,  "note": "" },
-  { "label": "2",  "lat": 38.54346277501878,  "lng": -121.69210731983186,  "note": "" },
-  { "label": "3",  "lat": 38.54246810039788,  "lng": -121.69372737407684,  "note": "" },
-  { "label": "4",  "lat": 38.54074743850638,  "lng": -121.68917834758759,  "note": "" },
-  { "label": "5",  "lat": 38.54237159894059,  "lng": -121.68487608432771,  "note": "" },
-  { "label": "6",  "lat": 38.54405037288541,  "lng": -121.67832076549531,  "note": "" },
-  { "label": "7",  "lat": 38.54208198287809,  "lng": -121.6777789592743,   "note": "" },
-  { "label": "8",  "lat": 38.540843753586195, "lng": -121.6789484024048,   "note": "" },
-  { "label": "9",  "lat": 38.54287528770029,  "lng": -121.6833794116974,   "note": "" },
-  { "label": "10", "lat": 38.54347961882987,  "lng": -121.68827176094057,  "note": "" },
-  { "label": "11", "lat": 38.543953765967665, "lng": -121.69360399246217,  "note": "" },
-  { "label": "12", "lat": 38.54542268836741,  "lng": -121.693212389946,    "note": "" },
-  { "label": "13", "lat": 38.54728168383763,  "lng": -121.68937146663667,  "note": "" },
-  { "label": "14", "lat": 38.54524220241451,  "lng": -121.68734371662141,  "note": "" },
-  { "label": "15", "lat": 38.547151740287816, "lng": -121.68231189250947,  "note": "" },
-  { "label": "16", "lat": 38.546983815223385, "lng": -121.68176472187044,  "note": "" },
-  { "label": "17", "lat": 38.54402081575977,  "lng": -121.67813301086427,  "note": "" },
-  { "label": "18", "lat": 38.54481736818766, "lng": -121.68243527412416,  "note": "" }
-];
-
-const featureGroup = L.featureGroup().addTo(map);
-const markers = [];
-
-function renderPins(){
-  featureGroup.clearLayers();
-  markers.length = 0;
-  teeData.forEach((t,i) => {
-    const m = L.marker([t.lat, t.lng], { icon:numIcon(t.label || (i+1)), draggable:true })
-      .bindPopup(`<b>Tee ${t.label||i+1}</b><br>${t.note||''}`)
-      .addTo(featureGroup);
-    m.on('dragend', e => {
-      const ll = e.target.getLatLng();
-      t.lat = ll.lat; t.lng = ll.lng;
+  // Numbered red pin factory
+  function numIcon(n){
+    return L.divIcon({
+      className: 'leaflet-div-icon',
+      html: `<span class="pin-num">${n}</span>`,
+      iconSize: [28,28], iconAnchor: [14,28], popupAnchor: [0,-24]
     });
+  }
+
+  // === Fixed hole locations (viewer-only; not draggable) ===
+  // Replace any lat/lng here if you adjust later.
+  const teeData = [
+    { label: '1',  lat: 38.54279952260164,  lng: -121.68821275234224,  note: '' },
+    { label: '2',  lat: 38.54346277501878,  lng: -121.69210731983186,  note: '' },
+    { label: '3',  lat: 38.54246810039788,  lng: -121.69372737407684,  note: '' },
+    { label: '4',  lat: 38.54074743850638,  lng: -121.68917834758759,  note: '' },
+    { label: '5',  lat: 38.54237159894059,  lng: -121.68487608432771,  note: '' },
+    { label: '6',  lat: 38.54405037288541,  lng: -121.67832076549531,  note: '' },
+    { label: '7',  lat: 38.54208198287809,  lng: -121.6777789592743,   note: '' },
+    { label: '8',  lat: 38.540843753586195, lng: -121.6789484024048,   note: '' },
+    { label: '9',  lat: 38.54287528770029,  lng: -121.6833794116974,   note: '' },
+    { label: '10', lat: 38.54347961882987,  lng: -121.68827176094057,  note: '' },
+    { label: '11', lat: 38.543953765967665, lng: -121.69360399246217,  note: '' },
+    { label: '12', lat: 38.54542268836741,  lng: -121.693212389946,    note: '' },
+    { label: '13', lat: 38.54728168383763,  lng: -121.68937146663667,  note: '' },
+    { label: '14', lat: 38.54524220241451,  lng: -121.68734371662141,  note: '' },
+    { label: '15', lat: 38.547151740287816, lng: -121.68231189250947,  note: '' },
+    { label: '16', lat: 38.546983815223385, lng: -121.68176472187044,  note: '' },
+    { label: '17', lat: 38.54402081575977,  lng: -121.67813301086427,  note: '' },
+    { label: '18', lat: 38.544948418932094, lng: -121.68457031250001,  note: '' }
+  ];
+
+  const markers = [];
+  teeData.forEach((t,i)=>{
+    const m = L.marker([t.lat, t.lng], { icon: numIcon(t.label || (i+1)) })
+      .bindPopup(`<b>Tee ${t.label||i+1}</b>${t.note?('<br>'+t.note):''}`)
+      .addTo(map);
     markers.push(m);
   });
-}
-renderPins();
 
-// Fit / Fly
-function fitAll(){
-  if (!markers.length) return;
-  const group = L.featureGroup(markers);
-  map.fitBounds(group.getBounds().pad(0.2));
-}
-
-document.getElementById('fit').addEventListener('click', fitAll);
-fitAll();
-
-document.getElementById('fly').addEventListener('click', () => {
-  const v = document.getElementById('goto').value.trim();
-  if(!v) return;
-  const parts = v.split(',').map(s => parseFloat(s.trim()));
-  if(parts.length===2 && parts.every(n => Number.isFinite(n))){
-    map.flyTo(parts, 17, {duration:0.7});
+  // Fit to all pins initially
+  if (markers.length){
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.2));
   }
-});
 
-// Import/Export
-function exportJSON(){
-  const out = JSON.stringify(teeData, null, 2);
-  const blob = new Blob([out], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), {href:url, download:'par3-tees.json'});
-  a.click(); URL.revokeObjectURL(url);
-}
+  // === GPS locate (HTTPS required on mobile) ===
+  // This will pan to the viewer's location if permission is granted.
+  try {
+    map.locate({ setView: false, maxZoom: 17, enableHighAccuracy: true, timeout: 8000 });
 
-document.getElementById('export').addEventListener('click', exportJSON);
+    map.on('locationfound', (e) => {
+      L.circleMarker(e.latlng, {
+        radius: 6, color: 'blue', fillColor: 'blue', fillOpacity: 0.75, weight: 2
+      }).bindPopup('You are here').addTo(map);
+    });
 
-document.getElementById('doImport').addEventListener('click', () => {
-  try{
-    const txt = document.getElementById('importTxt').value;
-    const arr = JSON.parse(txt);
-    if(Array.isArray(arr)){
-      teeData = arr.map((t,i)=>({
-        label: String(t.label ?? i+1),
-        lat: Number(t.lat),
-        lng: Number(t.lng),
-        note: t.note || ''
-      })).filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lng));
-      renderPins();
-      fitAll();
-    }
-  }catch(e){
-    alert('Could not import JSON. Check formatting.');
+    map.on('locationerror', (err) => {
+      console.log('Location error:', err && err.message ? err.message : err);
+    });
+  } catch (e) {
+    console.log('Geolocation not available in this context.');
   }
-});
-
-// Add / Renumber
-const addBtn = document.getElementById('addPin');
-const renumBtn = document.getElementById('renumber');
-
-addBtn.addEventListener('click', ()=>{
-  const c = map.getCenter();
-  const nextLabel = String(teeData.length + 1);
-  teeData.push({ label: nextLabel, lat: c.lat, lng: c.lng, note: '' });
-  renderPins();
-});
-
-renumBtn.addEventListener('click', ()=>{
-  teeData.forEach((t,i)=> t.label = String(i+1));
-  renderPins();
-  // === GPS Locate on mobile/desktop ===
-map.locate({ setView: true, maxZoom: 17 });
-
-map.on('locationfound', (e) => {
-  L.circleMarker(e.latlng, {
-    radius: 6,
-    color: 'blue',
-    fillColor: 'blue',
-    fillOpacity: 0.7
-  })
-  .bindPopup("You are here")
-  .addTo(map);
-});
-
-map.on('locationerror', () => {
-  console.log("Location access denied or unavailable.");
-});
-
-});
-</script>
+  </script>
 </body>
 </html>
