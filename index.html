@@ -156,25 +156,31 @@
       el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
     }
     function refreshUI(OneSignal) {
-      const subBtn  = document.getElementById('btn-subscribe');
-      const diagBtn = document.getElementById('btn-diagnostics');
-      const iosInfo = document.getElementById('ios-instructions');
-      const card    = document.getElementById('push-card');
-      if (!subBtn || !diagBtn || !card) return;
+  const subBtn  = document.getElementById('btn-subscribe');
+  const iosInfo = document.getElementById('ios-instructions');
+  const card    = document.getElementById('push-card');
+  if (!subBtn || !card) return;
 
-      const supported = OneSignal.Notifications.isPushSupported?.() === true;
-      const ok = supported && granted(OneSignal) &&
-                 OneSignal?.User?.PushSubscription?.optedIn === true &&
-                 !!OneSignal?.User?.PushSubscription?.id;
+  const supported = OneSignal.Notifications.isPushSupported?.() === true;
+  const ok = supported &&
+             (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
+             OneSignal?.User?.PushSubscription?.optedIn === true &&
+             !!OneSignal?.User?.PushSubscription?.id;
 
-      card.style.display = ok ? 'none' : '';
-      if (!ok) {
-        subBtn.style.display = '';
-        diagBtn.style.display = '';
-        if (iosInfo) iosInfo.style.display = '';
-      }
-      showStatus(OneSignal);
-    }
+  // Use [hidden] attribute so it plays nice with your other script
+  card.hidden = !!ok;
+
+  if (!ok) {
+    subBtn.style.display = '';
+    if (iosInfo) iosInfo.style.display = '';
+    // Only touch diagnostics button if it exists
+    const diagBtn = document.getElementById('btn-diagnostics');
+    if (diagBtn) diagBtn.style.display = '';
+  }
+
+  try { showStatus(OneSignal); } catch {}
+}
+
 
     window.addEventListener('load', () => {
       if (window.__OS_INITED__) return;
