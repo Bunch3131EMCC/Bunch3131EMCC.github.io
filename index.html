@@ -274,15 +274,74 @@ document.addEventListener('DOMContentLoaded', function(){
     </div>
 
     
-    <!-- Event Hub link -->
-<div class="card" style="margin-top:16px;">
+   <!-- Event Hub link -->
+<div class="card" style="margin-top:16px; text-align:center;">
   <h3 style="margin:0 0 8px 0;">Event Hub</h3>
-  <div style="text-align:center;">
-    <a class="pill" href="gg-embeds.html?v=4" style="display:inline-block;margin-top:10px;">
-      Matches · Scoring · Stats
-    </a>
-  </div>
+
+  <!-- Matches / Leaderboards / Stats link -->
+  <a class="pill" href="gg-embeds.html?v=4" style="display:block; margin:10px auto; max-width:250px;">
+    Matches · Scoring · Stats
+  </a>
+
+  <!-- Golf Genius scoring button -->
+  <button id="gg-open-app" class="gg-pill-btn gg-logo-btn" type="button" style="margin:10px auto; max-width:250px;">
+    <img src="assets/golfgeniuslogo.png" alt="Open Golf Genius" class="gg-logo">
+  </button>
 </div>
+
+<style>
+  /* reuse existing pill styling */
+  .gg-pill-btn{
+    display:block;
+    width:100%;
+    max-width:250px;     /* keeps it from being too wide */
+    margin:8px auto;
+    border-radius:9999px;
+    padding:10px 20px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    background:#fff;
+    border:1px solid var(--border,#e5e7eb);
+    color:var(--fg,#111827);
+    text-align:center;
+    transition:background .2s ease, transform .1s ease;
+  }
+  .gg-pill-btn:hover{ background:#f9fafb; }
+  .gg-logo{ height:28px; width:auto; display:block; margin:0 auto; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const openBtn = document.getElementById('gg-open-app');
+  if (!openBtn) return;
+
+  const IOS_URL  = "golfgenius://";
+  const AND_URL  = "golfgenius://";
+  const FALLBACK_IOS = "https://apps.apple.com/us/app/golf-genius/id555651262";
+  const FALLBACK_AND = "https://play.google.com/store/apps/details?id=com.golftripgenius.android.leaguegenius";
+
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent||"") ||
+                      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+  const isAndroid = () => /Android/i.test(navigator.userAgent||"");
+
+  openBtn.addEventListener('click', function(){
+    let tried = false;
+
+    function fallback() {
+      if (tried) return;
+      tried = true;
+      if (isIOS()) location.href = FALLBACK_IOS;
+      else if (isAndroid()) location.href = FALLBACK_AND;
+    }
+
+    const url = isIOS()? IOS_URL : (isAndroid()? AND_URL : IOS_URL);
+    location.href = url;
+    setTimeout(fallback, 1000); // fallback if app not installed
+  });
+});
+</script>
+
 
     <!-- SW status (debug helper) -->
     <div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
