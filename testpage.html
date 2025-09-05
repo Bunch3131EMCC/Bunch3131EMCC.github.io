@@ -1,4 +1,4 @@
-<!-- === Golf Genius Card (stacked white pill style) === -->
+<!-- === Golf Genius Card (stacked white pill style, bold text) === -->
 <div id="gg-card" class="gg-card">
   <div class="gg-card-content">
     <p class="gg-instructions">
@@ -20,8 +20,8 @@
 <!-- Modal -->
 <div id="gg-modal" class="gg-modal" hidden>
   <div class="gg-modal-content">
-    <p>
-      <strong>Please use the Golf Genius App to enter your scores during the event.</strong><br>
+    <p class="gg-modal-text">
+      Please use the Golf Genius App to enter your scores during the event.<br>
       All other information can be found here.
     </p>
     <button id="gg-close-modal" class="gg-pill-btn gg-secondary-btn" type="button">OK</button>
@@ -44,13 +44,14 @@
   .gg-instructions{
     font-size:16px;
     margin-bottom:16px;
+    font-weight:700; /* bold text */
   }
 
   /* Pill button base (stacked vertically) */
   .gg-pill-btn{
-    display:block;              /* force each on its own line */
-    width:fit-content;          /* shrink to fit content */
-    margin:8px auto;            /* center horizontally */
+    display:block;
+    width:fit-content;
+    margin:8px auto;
     border-radius:9999px;
     padding:10px 20px;
     font-size:15px;
@@ -95,6 +96,11 @@
     text-align:center;
     box-shadow:0 6px 20px rgba(0,0,0,.15);
   }
+  .gg-modal-text{
+    font-weight:700; /* bold text inside modal */
+    font-size:15px;
+    line-height:1.4;
+  }
 </style>
 
 <script>
@@ -137,4 +143,4 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 </script>
-<!-- === /Golf Genius Card (stacked white pill style) === -->
+<!-- === /Golf Genius Card (stacked white pill style, bold text) === -->
