@@ -316,31 +316,31 @@ document.addEventListener('DOMContentLoaded', function(){
   const openBtn = document.getElementById('gg-open-app');
   if (!openBtn) return;
 
-  const IOS_URL  = "golfgenius://";
-  const AND_URL  = "golfgenius://";
-  const FALLBACK_IOS = "https://apps.apple.com/us/app/golf-genius/id555651262";
-  const FALLBACK_AND = "https://play.google.com/store/apps/details?id=com.golftripgenius.android.leaguegenius";
+  const APP_SCHEME  = "golfgenius://";
+  const APPSTORE_URL = "https://apps.apple.com/us/app/golf-genius/id555651262";
+  const PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.golftripgenius.android.leaguegenius";
 
   const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent||"") ||
                       (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
   const isAndroid = () => /Android/i.test(navigator.userAgent||"");
 
   openBtn.addEventListener('click', function(){
-    let tried = false;
+    const storeUrl = isIOS() ? APPSTORE_URL : (isAndroid()? PLAYSTORE_URL : APPSTORE_URL);
 
-    function fallback() {
-      if (tried) return;
-      tried = true;
-      if (isIOS()) location.href = FALLBACK_IOS;
-      else if (isAndroid()) location.href = FALLBACK_AND;
-    }
+    // Try to launch the app
+    const now = Date.now();
+    window.location.href = APP_SCHEME;
 
-    const url = isIOS()? IOS_URL : (isAndroid()? AND_URL : IOS_URL);
-    location.href = url;
-    setTimeout(fallback, 1000); // fallback if app not installed
+    // If app not installed, redirect after ~1s
+    setTimeout(() => {
+      if (Date.now() - now < 1200) {
+        window.location.href = storeUrl;
+      }
+    }, 1000);
   });
 });
 </script>
+
 
 
     <!-- SW status (debug helper) -->
