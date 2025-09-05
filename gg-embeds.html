@@ -147,6 +147,30 @@ html, body { height: 100%; }
     try{ localStorage.setItem('gg_tab', key); }catch(_){}
   }
 
+  // expose for the wrapper below
+  window.selectTab = selectTab;
+
+  // === Full-bleed height helper ===
+  function _sizePanels() {
+    const visible = document.querySelector('[role="tabpanel"]:not([hidden])');
+    if (!visible) return;
+    const rectTop = visible.getBoundingClientRect().top;
+    const h = Math.max(200, window.innerHeight - rectTop);
+    document.querySelectorAll('[role="tabpanel"]').forEach(p => {
+      p.style.minHeight = h + 'px';
+      p.style.height = h + 'px';
+      const iframeBox = p.querySelector('.iframe-fluid');
+      if (iframeBox) iframeBox.style.height = '100%';
+    });
+  }
+
+  // Hook tab switcher so we resize after the panel changes
+  const _origSelectTab = window.selectTab;
+  window.selectTab = function(key){
+    _origSelectTab(key);
+    requestAnimationFrame(_sizePanels);
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tab-matches').addEventListener('click', () => selectTab('matches'));
     document.getElementById('tab-scoring').addEventListener('click', () => selectTab('scoring'));
@@ -154,38 +178,14 @@ html, body { height: 100%; }
 
     const last = localStorage.getItem('gg_tab') || 'matches';
     selectTab(external[last] ? last : 'matches');
+    _sizePanels(); // ensure initial full-height
   });
 
-  <script>
-// === Full-bleed height helper ===
-function _sizePanels() {
-  // Height = viewport minus the distance from top of visible panel to the viewport top
-  const visible = document.querySelector('[role="tabpanel"]:not([hidden])');
-  if (!visible) return;
-  const rectTop = visible.getBoundingClientRect().top; // px from top of viewport
-  const h = Math.max(200, window.innerHeight - rectTop);
-  // Apply to all panels so switching tabs doesn't flash
-  document.querySelectorAll('[role="tabpanel"]').forEach(p => {
-    p.style.minHeight = h + 'px';
-    p.style.height = h + 'px';
-    const iframeBox = p.querySelector('.iframe-fluid');
-    if (iframeBox) iframeBox.style.height = '100%';
-  });
-}
-
-// Run on load/resize/orientation, and after tab changes
-window.addEventListener('load', _sizePanels);
-window.addEventListener('resize', _sizePanels);
-window.addEventListener('orientationchange', _sizePanels);
-
-// Hook your existing tab switcher: call _sizePanels() at the end of selectTab()
-const _origSelectTab = window.selectTab;
-window.selectTab = function(key){
-  _origSelectTab(key);
-  requestAnimationFrame(_sizePanels);
-};
-</script>
-
+  window.addEventListener('load', _sizePanels);
+  window.addEventListener('resize', _sizePanels);
+  window.addEventListener('orientationchange', _sizePanels);
 </script>
 </body>
 </html>
+
+
