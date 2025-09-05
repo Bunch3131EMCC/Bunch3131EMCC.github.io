@@ -1,41 +1,105 @@
-<!-- Golf Genius Download Section -->
-<div class="gg-download">
-  <p class="gg-instructions">
-    <!-- 👇 Replace this with any instructions you want -->
-    Please install the Golf Genius app below to enter your scores.
-  </p>
+<!-- Golf Genius Card -->
+<div id="gg-card" class="gg-card">
+  <div class="gg-card-content">
+    <p class="gg-instructions">
+      Please install the Golf Genius app below to enter your scores.
+    </p>
 
-  <button id="gg-smart-btn" class="gg-btn" type="button">
-    <img src="assets/golfgeniuslogo.png" alt="Golf Genius" class="gg-logo">
-  </button>
+    <!-- Logo Button -->
+    <button id="gg-smart-btn" class="gg-btn" type="button">
+      <img src="assets/golfgeniuslogo.png" alt="Golf Genius" class="gg-logo">
+    </button>
+
+    <!-- "I've got it" Button -->
+    <button id="gg-hide-btn" class="gg-hide-btn" type="button">
+      I’ve got it
+    </button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="gg-modal" class="gg-modal" hidden>
+  <div class="gg-modal-content">
+    <p>
+      <strong>Please use the Golf Genius App to enter your scores during the event.</strong><br>
+      All other information can be found here.
+    </p>
+    <button id="gg-close-modal" class="gg-close-btn">OK</button>
+  </div>
 </div>
 
 <style>
-  .gg-download {
-    text-align:center;
-    margin:24px 0;
+  .gg-card {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    text-align: center;
   }
   .gg-instructions {
-    font-size:16px;
-    margin-bottom:12px;
-    color:#111827;
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: #111827;
   }
   .gg-btn {
-    border:none;
-    background:none;
-    padding:0;
-    cursor:pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto 16px;
   }
   .gg-logo {
-    max-width:200px; /* adjust size */
-    height:auto;
-    display:block;
-    margin:0 auto;
-    transition:transform .15s ease;
+    max-width: 200px;
+    height: auto;
+    transition: transform .15s ease;
   }
-  .gg-btn:hover .gg-logo {
-    transform:scale(1.05);
+  .gg-btn:hover .gg-logo { transform: scale(1.05); }
+  .gg-hide-btn {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s ease;
   }
+  .gg-hide-btn:hover { background: #1d4ed8; }
+
+  /* Modal styles */
+  .gg-modal {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index: 1000;
+  }
+  .gg-modal-content {
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    max-width:320px;
+    text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.2);
+  }
+  .gg-close-btn {
+    margin-top:15px;
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .gg-close-btn:hover { background:#1d4ed8; }
 </style>
 
 <script>
@@ -52,17 +116,42 @@
     return /Android/i.test(navigator.userAgent || "");
   }
 
-  var btn = document.getElementById("gg-smart-btn");
-  if (btn){
-    btn.addEventListener("click", function(){
+  var card = document.getElementById("gg-card");
+  var openBtn = document.getElementById("gg-smart-btn");
+  var hideBtn = document.getElementById("gg-hide-btn");
+  var modal = document.getElementById("gg-modal");
+  var closeModal = document.getElementById("gg-close-modal");
+
+  // Hide card if user has already clicked "I've got it"
+  if (localStorage.getItem("gg_hidden") === "true") {
+    card.style.display = "none";
+  }
+
+  // Open Golf Genius store link
+  if (openBtn){
+    openBtn.addEventListener("click", function(){
       if (isIOS()) {
         location.assign(IOS_URL);
       } else if (isAndroid()) {
         location.assign(AND_URL);
       } else {
-        // desktop fallback
         location.assign(IOS_URL);
       }
+    });
+  }
+
+  // Handle "I've got it" → show modal then hide card permanently
+  if (hideBtn){
+    hideBtn.addEventListener("click", function(){
+      modal.hidden = false;
+    });
+  }
+
+  if (closeModal){
+    closeModal.addEventListener("click", function(){
+      modal.hidden = true;
+      card.style.display = "none";
+      localStorage.setItem("gg_hidden", "true");
     });
   }
 })();
