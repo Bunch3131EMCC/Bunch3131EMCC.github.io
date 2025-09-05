@@ -48,6 +48,19 @@
     #schedule-today .sched-heading { font-size:18px !important; font-weight:800 !important; margin:0 0 8px 0 !important; }
     #schedule-today .sched-sub     { font-size:14px !important; font-weight:600 !important; margin:4px 0 !important; }
     #schedule-today .sched-item    { font-size:14px !important; line-height:1.3 !important; }
+    /* Keep the list left-aligned */
+#schedule-today { text-align: left; }
+
+/* Center ONLY the "Today" title */
+#schedule-today .sched-heading{
+  font-size:18px !important;
+  font-weight:800 !important;
+  margin:0 0 8px 0 !important;
+  text-align:center !important;
+  display:block;         /* helps if the JS puts it in a flex row */
+  width:100%;            /* ensures full width for proper centering */
+}
+
 
     #sw-status { display:none !important; }
 .par3-btn {
