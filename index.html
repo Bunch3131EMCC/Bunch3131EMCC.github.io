@@ -107,13 +107,156 @@
 
 <!-- Start of Golf Genius Card -->
 
+<!-- === Golf Genius Card (stacked white pill style, bold text) === -->
+<div id="gg-card" class="gg-card">
+  <div class="gg-card-content">
+    <p class="gg-instructions">
+      Please install the Golf Genius app below to enter your scores.
+    </p>
 
+    <!-- Logo pill -->
+    <button id="gg-smart-btn" class="gg-pill-btn gg-logo-btn" type="button" aria-label="Download Golf Genius">
+      <img src="assets/golfgeniuslogo.png" alt="Golf Genius" class="gg-logo">
+    </button>
 
+    <!-- Acknowledge pill -->
+    <button id="gg-hide-btn" class="gg-pill-btn gg-secondary-btn" type="button">
+      I’ve got it
+    </button>
+  </div>
+</div>
 
+<!-- Modal -->
+<div id="gg-modal" class="gg-modal" hidden>
+  <div class="gg-modal-content">
+    <p class="gg-modal-text">
+      Please use the Golf Genius App to enter your scores during the event.<br>
+      All other information can be found here.
+    </p>
+    <button id="gg-close-modal" class="gg-pill-btn gg-secondary-btn" type="button">OK</button>
+  </div>
+</div>
 
+<style>
+  /* Card container */
+  .gg-card{
+    max-width:400px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:16px;
+    background:var(--card,#fff);
+    color:var(--fg,#111827);
+    border:1px solid var(--border,#e5e7eb);
+    box-shadow:0 2px 6px rgba(0,0,0,.05);
+    text-align:center;
+  }
+  .gg-instructions{
+    font-size:16px;
+    margin-bottom:16px;
+    font-weight:700; /* bold text */
+  }
 
+  /* Pill button base (stacked vertically) */
+  .gg-pill-btn{
+    display:block;
+    width:fit-content;
+    margin:8px auto;
+    border-radius:9999px;
+    padding:10px 20px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s ease, transform .1s ease;
+  }
+  .gg-pill-btn:active{transform:scale(.97)}
 
+  /* White pill with border */
+  .gg-logo-btn,
+  .gg-secondary-btn{
+    background:#fff;
+    border:1px solid var(--border,#e5e7eb);
+    color:var(--fg,#111827);
+  }
+  .gg-logo-btn:hover,
+  .gg-secondary-btn:hover{
+    background:#f9fafb;
+  }
 
+  .gg-logo{
+    height:28px;
+    width:auto;
+    display:block;
+  }
+
+  /* Modal */
+  .gg-modal[hidden]{display:none !important;}
+  .gg-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:flex;
+  align-items:flex-start;   /* 👈 push to top instead of center */
+  justify-content:center;
+  padding-top:60px;         /* 👈 optional spacing from very top */
+  z-index:1000;
+  }
+  .gg-modal-content{
+    background:#fff;
+    color:#111827;
+    padding:20px;
+    border-radius:12px;
+    max-width:320px;
+    text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.15);
+  }
+  .gg-modal-text{
+    font-weight:700; /* bold text inside modal */
+    font-size:15px;
+    line-height:1.4;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const IOS_URL = "https://apps.apple.com/us/app/golf-genius/id555651262";
+  const AND_URL = "https://play.google.com/store/apps/details?id=com.golftripgenius.android.leaguegenius";
+  const STORAGE_KEY = "gg_hidden_pheasant_2025";
+
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent||"") ||
+                      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+  const isAndroid = () => /Android/i.test(navigator.userAgent||"");
+
+  const card = document.getElementById('gg-card');
+  const openBtn = document.getElementById('gg-smart-btn');
+  const hideBtn = document.getElementById('gg-hide-btn');
+  const modal = document.getElementById('gg-modal');
+  const closeBtn = document.getElementById('gg-close-modal');
+
+  // If previously acknowledged, hide card
+  if(localStorage.getItem(STORAGE_KEY)==="true"){
+    card.style.display = 'none';
+  }
+
+  // Open correct store
+  openBtn.addEventListener('click', function(){
+    const url = isIOS()? IOS_URL : (isAndroid()? AND_URL : IOS_URL);
+    location.assign(url);
+  });
+
+  // Show modal on "I've got it"
+  hideBtn.addEventListener('click', function(){
+    modal.hidden = false;
+  });
+
+  // Close modal -> hide card + persist
+  closeBtn.addEventListener('click', function(){
+    modal.hidden = true;
+    card.style.display = 'none';
+    localStorage.setItem(STORAGE_KEY, 'true');
+  });
+});
+</script>
+<!-- === /Golf Genius Card (stacked white pill style, bold text) === -->
 
     
 <!-- END of Golf Genius Card -->    
