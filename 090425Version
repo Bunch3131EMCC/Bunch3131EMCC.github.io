@@ -1,1 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-title" content="Pheasant App" />
+  <meta name="application-name" content="Pheasant App" />
+  <title>Pheasant App</title>
 
+  <link rel="manifest" href="manifest.json?v=6" />
+  <link rel="icon" href="assets/icon_20pt@3x.png?v=6" sizes="32x32" />
+
+  <!-- iOS / Safari icons -->
+  <link rel="apple-touch-icon" sizes="40x40"  href="assets/icon_20pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="60x60"  href="assets/icon_20pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="58x58"  href="assets/icon_29pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="87x87"  href="assets/icon_29pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="80x80"  href="assets/icon_40pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_40pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_60pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon_60pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="76x76"  href="assets/icon_76pt@1x.png?v=6">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon_76pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=6">
+
+  <style>
+    :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:860px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+    .logo{display:flex;align-items:center;justify-content:center}
+    .logo img{width:60px;height:60px;border-radius:14px}
+
+    h1{margin:0;font-size:28px;font-weight:800}
+    .muted{color:var(--muted)}
+    .card{border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;background:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:1px solid #111827;background:#111827;color:#fff;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn.alt{background:#fff;color:var(--fg);border-color:var(--border)}
+    .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px}
+    a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
+
+    /* Schedule card typography */
+    #schedule-today .sched-heading { font-size:18px !important; font-weight:800 !important; margin:0 0 8px 0 !important; }
+    #schedule-today .sched-sub     { font-size:14px !important; font-weight:600 !important; margin:4px 0 !important; }
+    #schedule-today .sched-item    { font-size:14px !important; line-height:1.3 !important; }
+
+    #sw-status { display:none !important; }
+.par3-btn {
+  display:inline-block;
+  padding:12px 20px;
+  border-radius:999px;
+  background:#228B22;       /* forest green */
+  color:#FFD700;            /* yellow text */
+  font-weight:700;
+  text-decoration:none;
+  border:2px solid #196619; /* darker green border */
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  transition:background 0.2s, transform 0.2s;
+}
+
+.par3-btn:hover {
+  background:#196619;       /* darker green hover */
+  transform:translateY(-2px);
+}
+
+.center-line{
+  display:flex;
+  justify-content:center;
+  margin-top:16px;
+}
+[hidden]{ display:none !important; }
+
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><img src="assets/icon_60pt@3x.png" alt="Pheasant logo" /></div>
+      <div>
+        <h1>The Pheasant</h1>
+        <div class="muted">Alerts • Schedule • Leaderboard</div>
+      </div>
+    </header>
+
+   <!-- Push subscribe card -->
+<div class="card" id="push-card" hidden>
+  <div class="row" style="display:flex;flex-direction:column;align-items:center">
+    <p id="ios-instructions" 
+       style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
+      iPhone Users: You must <em>Add to Home Screen</em> before enabling notifications.
+    </p>
+    <button id="btn-subscribe" class="btn">Enable Notifications</button>
+  </div>
+</div>
+
+
+   
+    <!-- Notifications Inbox (home summary) -->
+   <!-- <div class="card" id="recent-alerts" style="margin-top:16px;"></div> -->
+
+    <!-- Schedule summary -->
+    <div class="card" id="schedule-today" style="margin-top:16px;"></div>
+
+     <!-- Centered Par 3 Contest button -->
+    <div style="margin-top:24px; text-align:center;">
+      <a id="btn-par3-map"
+         class="par3-btn"
+         href="/par3-map.html"
+         style="display:none">
+         Par 3 Contest Tee Locations
+      </a>
+    </div>
+
+    
+    <!-- Event Hub link -->
+<div class="card" style="margin-top:16px;">
+  <h3 style="margin:0 0 8px 0;">Event Hub</h3>
+  <div style="text-align:center;">
+    <a class="pill" href="gg-embeds.html?v=4" style="display:inline-block;margin-top:10px;">
+      Matches · Scoring · Stats
+    </a>
+  </div>
+</div>
+
+    <!-- SW status (debug helper) -->
+    <div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
+  </div>
+
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js?v=6"></script>
+
+  <!-- OneSignal init + UI logic (guarded) -->
+  <script>
+    window.__OS_INITED__ = window.__OS_INITED__ || false;
+    window.__OS_FG_BRIDGE__ = window.__OS_FG_BRIDGE__ || false;
+    const log = (...a) => console.log('[Pheasant]', ...a);
+
+    function granted(OneSignal) {
+      const p = OneSignal.Notifications.permission;
+      return p === true || p === 'granted';
+    }
+    function showStatus(OneSignal) {
+      const el = document.getElementById('push-status');
+      if (!el || !OneSignal?.Notifications) return;
+      const supported = OneSignal.Notifications.isPushSupported();
+      const perm  = OneSignal.Notifications.permission;
+      const id    = OneSignal?.User?.PushSubscription?.id || null;
+      const opted = OneSignal?.User?.PushSubscription?.optedIn === true;
+      el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
+    }
+    function refreshUI(OneSignal) {
+  const subBtn  = document.getElementById('btn-subscribe');
+  const iosInfo = document.getElementById('ios-instructions');
+  const card    = document.getElementById('push-card');
+  if (!subBtn || !card) return;
+
+  const supported = OneSignal.Notifications.isPushSupported?.() === true;
+  const ok = supported &&
+             (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
+             OneSignal?.User?.PushSubscription?.optedIn === true &&
+             !!OneSignal?.User?.PushSubscription?.id;
+
+  // Use [hidden] attribute so it plays nice with your other script
+  card.hidden = !!ok;
+
+  if (!ok) {
+    subBtn.style.display = '';
+    if (iosInfo) iosInfo.style.display = '';
+    // Only touch diagnostics button if it exists
+    const diagBtn = document.getElementById('btn-diagnostics');
+    if (diagBtn) diagBtn.style.display = '';
+  }
+
+  try { showStatus(OneSignal); } catch {}
+}
+
+
+    window.addEventListener('load', () => {
+      if (window.__OS_INITED__) return;
+      window.__OS_INITED__ = true;
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function (OneSignal) {
+        try {
+          await OneSignal.init({
+            appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
+          });
+
+          // Context tag (optional)
+          try {
+            await OneSignal.User.addTags({
+              channel: (window.matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'browser'),
+              origin: location.origin
+            });
+          } catch {}
+
+         // Foreground/Click bridge (ensures logging even if inbox.js loads late)
+if (!window.__OS_FG_BRIDGE__) {
+  window.__OS_FG_BRIDGE__ = true;
+
+  // tiny helper to forward into inbox.js
+  const forward = (src, evt) => {
+    try {
+      const n = (evt && evt.notification) || evt || {};
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now(), src }
+      }, '*');
+    } catch (e) {
+      console.warn('forward error', e);
+    }
+  };
+
+  // Fires just before a notif shows while app is open
+  try {
+    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+      forward('fgWillDisplay', evt);
+      try {
+        if (evt?.preventDefault) evt.preventDefault(); // keep banner behavior consistent
+        const n = evt?.notification;
+        if (n?.display) n.display();
+      } catch {}
+    });
+  } catch (e) {
+    console.warn('hook fgWillDisplay failed', e);
+  }
+
+  // Fires when the user taps a notif while the app is open
+  try {
+    OneSignal.Notifications.addEventListener('click', (evt) => {
+      forward('click', evt);
+    });
+  } catch (e) {
+    console.warn('hook click failed', e);
+  }
+}
+
+
+
+          // UI wiring
+          OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
+          OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
+
+          const subBtn  = document.getElementById('btn-subscribe');
+const diagBtn = document.getElementById('btn-diagnostics');
+if (subBtn) {
+  subBtn.onclick = async () => {
+    try {
+      log('optIn click');
+      await OneSignal.User.PushSubscription.optIn();
+
+      // Tag (optional)
+      try { await OneSignal.User.addTag('players','true'); } catch {}
+
+      // Optimistic hide immediately
+      const card = document.getElementById('push-card');
+      if (card) card.hidden = true;
+
+      // Re-check a few times in case OneSignal state lags
+      const retries = [150, 600, 2000];
+      for (const ms of retries) {
+        await new Promise(r => setTimeout(r, ms));
+        refreshUI(OneSignal);
+        const ok =
+          OneSignal?.Notifications?.isPushSupported?.() === true &&
+          (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
+          OneSignal?.User?.PushSubscription?.optedIn === true &&
+          !!OneSignal?.User?.PushSubscription?.id;
+        if (ok) break;
+      }
+    } catch (e) {
+      console.error('optIn error', e);
+      alert('Subscribe error: ' + (e?.message || e));
+      // If anything failed, show the card again so they can retry
+      const card = document.getElementById('push-card');
+      if (card) card.hidden = false;
+    } finally {
+      refreshUI(OneSignal);
+    }
+  };
+}
+
+          if (diagBtn) {
+            diagBtn.onclick = async () => {
+              const supported = OneSignal.Notifications.isPushSupported();
+              const p   = OneSignal.Notifications.permission;
+              const id  = OneSignal.User.PushSubscription.id;
+              const tok = OneSignal.User.PushSubscription.token;
+              const opt = OneSignal.User.PushSubscription.optedIn;
+              alert(`supported=${supported}\npermission=${String(p)}\noptedIn=${opt}\nid=${id || '(null)'}\ntoken=${tok || '(none)'}`);
+              showStatus(OneSignal);
+            };
+          }
+
+          refreshUI(OneSignal);
+          setTimeout(() => refreshUI(OneSignal), 500);
+          setTimeout(() => refreshUI(OneSignal), 2000);
+        } catch (e) {
+          console.error('init error', e);
+          alert('Init error: ' + (e?.message || e));
+        }
+      });
+    });
+  </script>
+
+  <!-- Inbox module -->
+  <script type="module" src="assets/inbox.js?v=18"></script>
+
+ 
+  
+  <!-- Schedule -->
+  <script defer src="assets/schedule.js?v=16"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      renderScheduleSummary('schedule-today', 'schedule.json');
+    });
+  </script>
+
+  <!-- SW status + auto-reload -->
+  <script>
+    (async () => {
+      const el = document.getElementById('sw-status');
+      if (!el || !('serviceWorker' in navigator)) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const ctrl = !!navigator.serviceWorker.controller;
+        const url  = reg?.active?.scriptURL || '(none)';
+        el.textContent = `SW controlled=${ctrl} • script=${url}`;
+      } catch {
+        el.textContent = 'SW controlled=false • script=(none)';
+      }
+    })();
+    if ('serviceWorker' in navigator) {
+      let refreshed = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshed) return;
+        refreshed = true;
+        location.reload();
+      });
+    }
+  </script>
+
+  <!-- Debug handlers -->
+  <script>
+    async function postToSW(msg) {
+      if (navigator.serviceWorker?.controller) {
+        navigator.serviceWorker.controller.postMessage(msg);
+        return true;
+      }
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg?.active) { reg.active.postMessage(msg); return true; }
+      } catch {}
+      return false;
+    }
+
+    document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
+      }, '*');
+    });
+
+    document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
+      const msg = { channel: 'pheasant-inbox-test', note: 'manual ping' };
+      let ok = await postToSW(msg);
+      if (!ok) { await new Promise(r => setTimeout(r, 300)); ok = await postToSW(msg); }
+      if (!ok) { await new Promise(r => setTimeout(r, 800)); ok = await postToSW(msg); }
+      if (!ok) alert('Could not reach Service Worker. Try reloading once.');
+      else alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
+    });
+
+    document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG OS fg', body: 'simulated foreground', at: Date.now() }
+      }, '*');
+    });
+  </script>
+
+  <script>
+(function(){
+  const BTN_ID = 'btn-par3-map';
+
+  // === SET YOUR START/STOP TIMES HERE ===
+  // Leave as '' to make the button always visible.
+  // Format: 'YYYY-MM-DDTHH:MM' in local time.
+  const START_TIME = '';  // e.g. '2025-09-12T09:30'
+  const END_TIME   = '';  // e.g. '2025-09-12T15:00'
+  // ======================================
+
+  const btn = document.getElementById(BTN_ID);
+  if (!btn) return;
+
+  function parseTime(str){
+    if (!str) return null;
+    const d = new Date(str);
+    return isFinite(d.getTime()) ? d : null;
+  }
+
+  const start = parseTime(START_TIME);
+  const end   = parseTime(END_TIME);
+
+  function withinWindow(now){
+    // If either is missing, default to visible (always on)
+    if (!start || !end) return true;
+    return now >= start && now <= end;
+  }
+
+  function updateVisibility(){
+    btn.style.display = withinWindow(new Date()) ? '' : 'none';
+  }
+
+  updateVisibility();
+  setInterval(updateVisibility, 30 * 1000); // keep state fresh if page stays open
+})();
+</script>
+
+
+</body>
+</html>
