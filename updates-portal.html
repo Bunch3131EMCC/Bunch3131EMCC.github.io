@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pheasant — Updates Portal</title>
+<meta name="theme-color" content="#ffffff" />
+
+<!-- Always light mode styles -->
+<style>
+  :root { --bg:#ffffff; --card:#ffffff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; --accent:#2563eb; }
+  *{ box-sizing:border-box }
+  html, body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+  .wrap { max-width: 780px; margin: 28px auto 40px; padding: 0 16px; }
+
+  h1 { font-size:22px; margin:0 0 6px; }
+  p.sub { color:var(--muted); margin:0 0 16px; }
+  .card { border:1px solid var(--border); border-radius:16px; background:var(--card); padding:16px; margin-bottom:16px; }
+
+  label { display:block; font-size:14px; color:var(--muted); margin:8px 0 6px; }
+  input, textarea, button { width:100%; font:inherit; }
+  input, textarea { border:1px solid var(--border); border-radius:12px; padding:10px; background:#fff; color:var(--fg); }
+  textarea { min-height:140px; resize:vertical; }
+  button { border:0; border-radius:12px; padding:12px; cursor:pointer; background:var(--accent); color:#fff; font-weight:700; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .row.right { justify-content:flex-end; }
+  .muted { color:var(--muted); font-size:12px; }
+  .ok { color:#065f46; }
+  .err { color:#b91c1c; }
+
+  .feed { display:flex; flex-direction:column; gap:10px; }
+  .item { border:1px solid var(--border); border-radius:12px; padding:10px; }
+  .meta { display:flex; justify-content:space-between; color:var(--muted); font-size:12px; margin-bottom:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Live Updates — Admin Portal</h1>
+  <p class="sub">Sign in via magic link, then post updates. Only approved emails can publish.</p>
+
+  <div id="authCard" class="card">
+    <div id="authView">
+      <label for="email">Poster email</label>
+      <div class="row">
+        <input id="email" type="email" placeholder="name@yourdomain.com" autocomplete="email" />
+        <button id="btnMagic" style="width:auto;">Send magic link</button>
+      </div>
+      <p class="muted">We’ll email you a one-time link to sign in.</p>
+    </div>
+
+    <div id="postView" style="display:none;">
+      <div class="row" style="justify-content:space-between; margin-bottom:8px;">
+        <div class="muted" id="who"></div>
+        <button id="btnSignout" style="width:auto; background:#ef4444;">Sign out</button>
+      </div>
+
+      <label for="author">Display name</label>
+      <input id="author" type="text" placeholder="Starter / Announcer" />
+
+      <label for="body">Message</label>
+      <textarea id="body" placeholder="What just happened? (Max 2000 characters)"></textarea>
+
+      <div class="row right">
+        <button id="btnPost" style="width:auto;">Post update</button>
+      </div>
+      <p class="muted" id="status"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 10px; font-size:18px;">Recent Posts</h2>
+    <div id="feed" class="feed"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  // ======= CONFIG (replace both placeholders) =======
+  const SUPABASE_URL  = 'https://YOUR_SUPABASE_URL.supabase.co';
+  const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+  const DISPLAY_TZ    = 'America/Los_Angeles';
+  // ================================================
+
+  const { createClient } = window.supabase;
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  const authView = document.getElementById('authView');
+  const postView = document.getElementById('postView');
+  const who = document.getElementById('who');
+  const email = document.getElementById('email');
+  const author = document.getElementById('author');
+  const body = document.getElementById('body');
+  const statusEl = document.getElementById('status');
+  const feedEl = document.getElementById('feed');
+
+  function esc(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmt(ts){
+    const d = new Date(ts);
+    try { return d.toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short', timeZone: DISPLAY_TZ }); }
+    catch { return d.toLocaleString(); }
+  }
+  function toast(msg, good=false){
+    statusEl.textContent = msg;
+    statusEl.className = 'muted ' + (good ? 'ok' : '');
+    setTimeout(()=>{ statusEl.textContent=''; statusEl.className='muted'; }, 2500);
+  }
+  function renderItem(r, { prepend=false } = {}){
+    const d = document.createElement('div');
+    d.className = 'item';
+    d.innerHTML = `<div class="meta"><span>${esc(r.author)}</span><span>${fmt(r.created_at)}</span></div><div>${esc(r.body)}</div>`;
+    if (prepend && feedEl.firstChild) feedEl.insertBefore(d, feedEl.firstChild); else feedEl.appendChild(d);
+  }
+
+  async function refreshFeed(){
+    const { data, error } = await supabase.from('live_updates').select('*').order('created_at', { ascending:false }).limit(100);
+    if (error){ console.error(error); return; }
+    feedEl.innerHTML = '';
+    data.forEach(r => renderItem(r));
+  }
+
+  // Auth state
+  supabase.auth.onAuthStateChange((_event, session) => {
+    const authed = !!session;
+    authView.style.display = authed ? 'none' : '';
+    postView.style.display = authed ? '' : 'none';
+    who.textContent = authed ? `Signed in: ${session.user.email}` : '';
+    if (authed && !author.value) author.value = session.user.email.split('@')[0];
+  });
+
+  // Magic link sign-in
+  document.getElementById('btnMagic').onclick = async () => {
+    if (!email.value) { toast('Enter your email'); return; }
+    const { error } = await supabase.auth.signInWithOtp({ email: email.value, options: { emailRedirectTo: location.href } });
+    if (error){ toast(error.message); return; }
+    toast('Check your email for the sign-in link.', true);
+  };
+
+  // Sign out
+  document.getElementById('btnSignout').onclick = async () => {
+    await supabase.auth.signOut();
+    toast('Signed out', true);
+  };
+
+  // Post update
+  document.getElementById('btnPost').onclick = async () => {
+    const a = author.value.trim();
+    const b = body.value.trim();
+    if (!a || !b){ toast('Add a display name and a message'); return; }
+    if (b.length > 2000){ toast('Message too long (max 2000)'); return; }
+
+    const { error } = await supabase.from('live_updates').insert({ author: a, body: b });
+    if (error){
+      toast(error.message);
+      console.error(error);
+      return;
+    }
+    body.value = '';
+    toast('Posted!', true);
+  };
+
+  // Realtime (reflect new posts immediately at top)
+  supabase
+    .channel('admin-live')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'live_updates' }, payload => {
+      renderItem(payload.new, { prepend:true });
+    })
+    .subscribe();
+
+  refreshFeed();
+</script>
+</body>
+</html>
