@@ -76,10 +76,11 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
   // ======= CONFIG (replace both placeholders) =======
-  const SUPABASE_URL  = 'https://YOUR_SUPABASE_URL.supabase.co';
-  const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
-  const DISPLAY_TZ    = 'America/Los_Angeles';
-  // ================================================
+const SUPABASE_URL  = 'https://xbhpcweidljpqxuryevi.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhiaHBjd2VpZGxqcHF4dXJ5ZXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwOTM1OTgsImV4cCI6MjA3MjY2OTU5OH0.KeQ1CvMEdypeobmpuRK-ut8exYhYE8OeQ3h1PJFOYh8';
+const DISPLAY_TZ    = 'America/Los_Angeles';
+// ================================================
+
 
   const { createClient } = window.supabase;
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
