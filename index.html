@@ -330,6 +330,47 @@
     font-size:15px;
     line-height:1.4;
   }
+
+  .page-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centers the title */
+  margin-bottom: 16px;
+}
+
+/* Circular pill arrow */
+.btn-home {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;        /* circle shape */
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-home:hover {
+  background: #f3f4f6;
+}
+
+/* Page title standardized */
+.page-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  text-align: center;
+}
+
 </style>
 
 <script>
