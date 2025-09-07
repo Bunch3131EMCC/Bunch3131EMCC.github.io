@@ -151,16 +151,21 @@
   font-weight: 800;
   margin: 0 0 8px 0;
 }
-/* Consistent page header layout */
+/* Page header wrapper */
 .page-header {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center; /* center title */
   margin-bottom: 16px;
 }
 
-/* Small subtle home arrow */
+/* Small arrow button */
 .btn-home {
+  position: absolute;       /* keeps it on the left without affecting centering */
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-block;
   width: 28px;
   height: 28px;
@@ -172,19 +177,19 @@
   color: var(--fg);
   font-size: 16px;
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: none;    /* removes underline */
   transition: background 0.2s;
-  flex-shrink: 0;
 }
 .btn-home:hover { background: #f3f4f6; }
 
-/* Standardized page titles */
+/* Page title (standardized with "Today") */
 .page-title {
   font-size: 18px;
   font-weight: 800;
   margin: 0;
-  flex: 1;
+  text-align: center;
 }
+
 
 
 
