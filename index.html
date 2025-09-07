@@ -3,9 +3,25 @@
 <head>
 
   <script>
-/* No-flash guard: run before paint */
+/* No-flash guard with iOS-only browser hide */
 (function () {
   try {
+    // Detect iOS (iPhone/iPad/iPod or Mac with touch points)
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+    // Detect standalone (A2HS app) mode
+    var isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+
+    // Only hide the card automatically in iOS Safari tabs (not A2HS, not Android)
+    if (isIOS && !isStandalone) {
+      document.documentElement.classList.add('hide-push-card');
+    }
+
+    // Respect prior opt-in flag (both platforms)
     var isDone = localStorage.getItem('pheasant_push_done') === '1';
     if (isDone) {
       document.documentElement.classList.add('hide-push-card');
@@ -13,6 +29,7 @@
   } catch (e) {}
 })();
 </script>
+
   
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
