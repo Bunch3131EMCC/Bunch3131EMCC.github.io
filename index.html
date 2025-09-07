@@ -25,6 +25,20 @@
   <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=6">
   <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=6">
 
+<script>
+/* No-flash guard: run before paint */
+(function () {
+  try {
+    var isDone = localStorage.getItem('pheasant_push_done') === '1';
+    if (isDone) {
+      document.documentElement.classList.add('hide-push-card');
+    }
+  } catch (e) {}
+})();
+</script>
+
+
+  
   <style>
     :root { --bg:#fff; --fg:#111827; --muted:#64748b; --border:#e5e7eb; }
     *{box-sizing:border-box}
@@ -87,6 +101,13 @@
   margin-top:16px;
 }
 [hidden]{ display:none !important; }
+
+ /* Default state (card can be shown) */
+#push-card { display: block; }
+
+/* If user already enabled push, never render the card */
+.hide-push-card #push-card { display: none !important; }
+
 
 
   </style>
@@ -473,6 +494,9 @@ if (subBtn) {
       log('optIn click');
       await OneSignal.User.PushSubscription.optIn();
 
+// NEW: remember success so the no-flash guard hides the card pre-paint
+      localStorage.setItem('pheasant_push_done', '1');
+      
       // Tag (optional)
       try { await OneSignal.User.addTag('players','true'); } catch {}
 
