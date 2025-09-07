@@ -148,56 +148,58 @@ html, body { height: 100%; }
 <body>
 
   <div class="wrap">
-<!-- Page Header -->
+<!-- Page Header (grid layout: left arrow · centered title · right spacer) -->
 <div class="page-header">
   <a href="index.html" class="btn-home" aria-label="Back to Home">
-    <!-- crisp SVG arrow avoids font clipping -->
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
       <path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
     </svg>
   </a>
   <h2 class="page-title">Tournament Info</h2>
+  <span class="right-spacer" aria-hidden="true"></span>
 </div>
 
 <style>
-/* Scoped header styles – safe on this page only */
+/* Grid header avoids absolute positioning/clipping */
 .page-header{
-  position:relative;
-  display:flex;
+  display:grid;
+  grid-template-columns: 28px 1fr 28px; /* arrow | title | spacer */
   align-items:center;
-  justify-content:center;  /* centers the title */
-  margin-bottom:16px;
-  overflow:visible;        /* prevent icon cropping if a parent has overflow */
+  margin: 8px 0 16px;
+  overflow:visible; /* be generous on full-bleed frames */
 }
 
-.page-header .btn-home{
-  position:absolute;
-  left:0;
-  top:50%;
-  transform:translateY(-50%);
+/* Circular pill arrow */
+.btn-home{
+  grid-column:1;
   display:flex;
   align-items:center;
   justify-content:center;
   width:28px;
   height:28px;
-  box-sizing:border-box;
   border-radius:50%;
-  border:1px solid #9ca3af;   /* matches var(--border) */
+  border:1px solid #9ca3af;  /* matches var(--border) */
   background:#fff;
-  color:#111827;               /* matches var(--fg) */
-  text-decoration:none;        /* no underline */
+  color:#111827;              /* matches var(--fg) */
+  text-decoration:none;
   transition:background .2s;
 }
-.page-header .btn-home:hover{ background:#f3f4f6; }
-.page-header .btn-home svg{ display:block } /* no extra line-height */
+.btn-home:hover{ background:#f3f4f6; }
+.btn-home svg{ display:block } /* no line-height spill */
 
-.page-header .page-title{
-  font-size:18px;
-  font-weight:800;
+/* Centered title, same spec as “Today” */
+.page-title{
+  grid-column:2;
   margin:0;
   text-align:center;
+  font-size:18px;
+  font-weight:800;
 }
+
+/* Right spacer balances the grid visually */
+.right-spacer{ grid-column:3; width:28px; height:28px; }
 </style>
+
 
 
 
