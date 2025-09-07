@@ -148,11 +148,51 @@ html, body { height: 100%; }
 <body>
 
   <div class="wrap">
-    <!-- Header (tight, like Schedule) -->
-  <header class="page-header">
+  <!-- Page Header -->
+<div class="page-header">
   <a href="index.html" class="btn-home" aria-label="Back to Home">←</a>
   <h2 class="page-title">Tournament Info</h2>
-</header>
+</div>
+
+<style>
+/* Scoped header styles */
+.page-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centers title regardless of arrow */
+  margin-bottom: 16px;
+}
+
+.page-header .btn-home {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #9ca3af;   /* matches var(--border) */
+  background: #fff;
+  color: #111827;              /* matches var(--fg) */
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.page-header .btn-home:hover { background: #f3f4f6; }
+
+.page-header .page-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  text-align: center;
+}
+</style>
+
 
 
 
