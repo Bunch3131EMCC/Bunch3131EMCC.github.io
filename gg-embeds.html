@@ -90,19 +90,24 @@ html, body { height: 100%; }
   display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; margin:1rem 0 1.25rem;
 }
 
-/* Inactive tab = standard unclicked button (white bg, dark text) */
-.gg-embeds .tabs .tab[role="tab"]{
-  appearance:none;
-  background:#fff;
-  color:var(--ui-fg);
-  border:1.5px solid var(--ui-border);
-  border-radius:9999px;
-  padding:.5rem .9rem;
-  font-weight:600; line-height:1;
-  transition:background .15s,color .15s,border-color .15s,box-shadow .15s,transform .02s;
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.02);
+/* Inactive tab = exactly like a normal site button (white bg, dark text) */
+.gg-embeds .tabs .tab[role="tab"] {
+  background: #fff;
+  color: #000;                /* force normal dark text */
+  border: 1px solid #d1d5db;  /* tailwind slate-300-ish */
+  border-radius: 9999px;
+  padding: .5rem .9rem;
+  font-weight: 500;           /* same as typical button */
+  line-height: 1;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
 }
-.gg-embeds .tabs .tab[role="tab"]:hover{ border-color:var(--ui-border-2); }
+
+/* Hover/focus just darkens border a bit */
+.gg-embeds .tabs .tab[role="tab"]:hover {
+  border-color: #9ca3af;      /* slate-400 */
+}
+
 
 /* ACTIVE tab = solid green bg + yellow text (exact Par-3 treatment) */
 .gg-embeds .tabs .tab[role="tab"][aria-selected="true"],
