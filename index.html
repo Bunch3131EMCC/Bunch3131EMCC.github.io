@@ -331,23 +331,27 @@ document.addEventListener('DOMContentLoaded', function(){
     </div>
 
     
-   <!-- Event Hub link -->
-<div class="card" style="margin-top:16px; text-align:center;">
-  <h3 style="margin:0 0 8px 0;">Event Hub</h3>
+<!-- Event Hub Section -->
+<div class="card">
+  <h2>Event Hub</h2>
+  <div class="pill-group">
 
-  <!-- Matches / Leaderboards / Stats link -->
-  <a class="pill" href="gg-embeds.html?v=4" style="display:block; margin:10px auto; max-width:250px;">
-    Matches · Leaderboards · Stats
-  </a>
+    <!-- Single pill with all three -->
+    <button class="pill" onclick="window.location.href='matches.html'">
+      Matches&middot;Leaderboards&middot;Stats
+    </button>
 
-  <!-- Golf Genius scoring button -->
-  <button id="gg-open-app" class="gg-pill-btn gg-logo-btn" type="button" style="margin:10px auto; max-width:250px;">
-    <img src="assets/golfgeniuslogo.png" alt="Open Golf Genius" class="gg-logo">
-  </button>
-  <!-- NEW Horse Race Live Updates button -->
+    <!-- Golf Genius pill -->
+    <button class="pill" onclick="window.open('https://www.golfgenius.com/app', '_blank')">
+      Golf Genius
+    </button>
+
+    <!-- New Horse Race Live Updates pill -->
     <button class="pill" onclick="window.location.href='updates.html'">
       Horse Race Live Updates
     </button>
+
+  </div>
 </div>
 
 <style>
