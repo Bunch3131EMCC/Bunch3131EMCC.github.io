@@ -73,6 +73,99 @@ html, body { height: 100%; }
 /* Hide the little footer link if you want zero chrome */
 .panel-footer { display: none; }
 
+/* === GG Embeds – UI harmonize (Par-3 green/yellow + stronger borders + centered) === */
+:root {
+  --gg-green: #16a34a;   /* Par-3 green */
+  --gg-yellow:#facc15;   /* Par-3 yellow */
+  --gg-fg:    #111827;
+  --gg-border:#cbd5e1;   /* slate-300 */
+  --gg-border-strong:#94a3b8; /* slate-400 */
+}
+
+/* Button row wrapper – center horizontally */
+#gg-embeds .button-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+/* Base button style */
+#gg-embeds .tab-btn,
+#gg-embeds .filter-btn,
+#gg-embeds .segmented button,
+#gg-embeds .nav-pills button {
+  appearance: none;
+  border: 1.5px solid var(--gg-border);
+  background: #fff;
+  color: var(--gg-fg);
+  border-radius: 9999px;
+  padding: .5rem .9rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
+}
+
+/* Hover */
+#gg-embeds .tab-btn:hover,
+#gg-embeds .filter-btn:hover,
+#gg-embeds .segmented button:hover,
+#gg-embeds .nav-pills button:hover {
+  border-color: var(--gg-border-strong);
+}
+
+/* Active = Par-3 green→yellow */
+#gg-embeds .tab-btn.active,
+#gg-embeds .filter-btn.active,
+#gg-embeds .segmented button.active,
+#gg-embeds .nav-pills button.active,
+#gg-embeds .tab-btn[aria-selected="true"],
+#gg-embeds .filter-btn[aria-selected="true"],
+#gg-embeds .segmented button[aria-selected="true"],
+#gg-embeds .nav-pills button[aria-selected="true"],
+#gg-embeds .tab-btn[aria-pressed="true"],
+#gg-embeds .filter-btn[aria-pressed="true"],
+#gg-embeds .segmented button[aria-pressed="true"],
+#gg-embeds .nav-pills button[aria-pressed="true"] {
+  background: linear-gradient(135deg, var(--gg-green), var(--gg-yellow));
+  color: #0b1727;
+  border-color: rgba(0,0,0,.2);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.05);
+}
+
+/* Force override if old styles are too specific */
+#gg-embeds .nav-pills button.active {
+  background-image: linear-gradient(135deg, var(--gg-green), var(--gg-yellow)) !important;
+}
+
+/* Card styling */
+#gg-embeds .card {
+  border: 1.5px solid var(--gg-border-strong);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+/* Pills / chips */
+#gg-embeds .pill,
+#gg-embeds .chip {
+  border: 1.5px solid var(--gg-border-strong);
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gg-border:#334155;         /* slate-700 */
+    --gg-border-strong:#475569;  /* slate-600 */
+    --gg-fg:#e5e7eb;
+  }
+  #gg-embeds .card {
+    box-shadow: 0 1px 2px rgba(0,0,0,.35);
+  }
+}
 
   
 </style>
@@ -87,6 +180,7 @@ html, body { height: 100%; }
     </header>
 
     <!-- Tabs -->
+    <div class="gg-embeds">
     <div class="tabs" role="tablist" aria-label="Tournament Hub">
       <button type="button" class="tab" role="tab" id="tab-matches" aria-controls="panel-matches" aria-selected="true">Matches</button>
       <button type="button" class="tab" role="tab" id="tab-scoring" aria-controls="panel-scoring" aria-selected="false">Scoring</button>
@@ -105,6 +199,7 @@ html, body { height: 100%; }
     <!-- Placeholder panels (uncomment to use) -->
     <!-- <section id="panel-extra1" role="tabpanel" aria-labelledby="tab-extra1" class="card" hidden></section> -->
     <!-- <section id="panel-extra2" role="tabpanel" aria-labelledby="tab-extra2" class="card" hidden></section> -->
+    </div>
   </div>
 
 <script>
