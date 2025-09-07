@@ -1,6 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
+
+  <script>
+/* No-flash guard: run before paint */
+(function () {
+  try {
+    var isDone = localStorage.getItem('pheasant_push_done') === '1';
+    if (isDone) {
+      document.documentElement.classList.add('hide-push-card');
+    }
+  } catch (e) {}
+})();
+</script>
+  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#ffffff" />
@@ -25,17 +38,7 @@
   <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=6">
   <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=6">
 
-<script>
-/* No-flash guard: run before paint */
-(function () {
-  try {
-    var isDone = localStorage.getItem('pheasant_push_done') === '1';
-    if (isDone) {
-      document.documentElement.classList.add('hide-push-card');
-    }
-  } catch (e) {}
-})();
-</script>
+
 
 
   
@@ -124,7 +127,7 @@
     </header>
 
    <!-- Push subscribe card -->
-<div class="card" id="push-card">
+<div class="card" id="push-card" hidden>
   <div class="row" style="display:flex;flex-direction:column;align-items:center">
     <p id="ios-instructions" 
        style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
