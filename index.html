@@ -79,6 +79,20 @@
     /* Logo inside a pill: size + vertical align */
 .pill-logo { height: 24px; width: auto; vertical-align: middle; display: inline-block; }
 
+    /* Stack Event Hub pills vertically */
+.stacked-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* space between pills */
+}
+
+.stacked-pills .pill {
+  display: block;    /* full-width clickable pill */
+  width: 100%;       /* optional: stretch pill to parent width */
+  max-width: 300px;  /* optional: limit pill size */
+  margin: 0 auto;    /* center pills horizontally */
+}
+
 
     /* Schedule card typography */
     #schedule-today .sched-heading { font-size:18px !important; font-weight:800 !important; margin:0 0 8px 0 !important; }
@@ -337,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function(){
 <!-- Event Hub Section -->
 <div class="card">
   <h2>Event Hub</h2>
-  <div class="pill-group">
+  <div class="pill-group stacked-pills">
 
     <!-- Single pill with middle dots -->
     <a class="pill" href="matches.html">
@@ -356,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   </div>
 </div>
+
 
 
 <style>
