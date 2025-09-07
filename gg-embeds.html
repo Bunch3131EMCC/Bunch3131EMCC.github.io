@@ -73,82 +73,68 @@ html, body { height: 100%; }
 /* Hide the little footer link if you want zero chrome */
 .panel-footer { display: none; }
 
-/* === GG Embeds — Par-3 match (active: green bg + yellow text) === */
-:root {
-  --par3-green:  #16a34a;   /* adjust if your main page uses a different hex */
+/* === GG Embeds — match Par-3 (active: green bg + yellow text), center tabs, stronger borders === */
+:root{
+  /* Swap these two if your Par-3 uses different hex values */
+  --par3-green:  #16a34a;   /* Par-3 green */
   --par3-green-2:#15803d;   /* hover/pressed */
-  --par3-yellow: #facc15;
-  --ui-fg:       #111827;
-  --ui-border:   #cbd5e1;   /* slate-300 */
-  --ui-border-2: #94a3b8;   /* slate-400 */
+  --par3-yellow: #facc15;   /* Par-3 yellow */
+
+  --ui-fg:#111827;
+  --ui-border:#cbd5e1;      /* slate-300 */
+  --ui-border-2:#94a3b8;    /* slate-400 */
 }
 
-/* Center the tabs row */
-.gg-embeds .tabs[role="tablist"] {
-  display: flex;
-  justify-content: center;
-  gap: .75rem;
-  flex-wrap: wrap;
-  margin: 1rem 0 1.25rem;
+/* Center the tab buttons */
+.gg-embeds .tabs[role="tablist"]{
+  display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; margin:1rem 0 1.25rem;
 }
 
-/* Inactive tab = standard button: white bg, dark text, normal border */
-.gg-embeds .tabs .tab[role="tab"] {
-  appearance: none;
-  background: #fff;
-  color: var(--ui-fg);
-  border: 1.5px solid var(--ui-border);
-  border-radius: 9999px;
-  padding: .5rem .9rem;
-  font-weight: 600;
-  line-height: 1;
-  transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .02s ease;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
+/* Inactive tab = standard unclicked button (white bg, dark text) */
+.gg-embeds .tabs .tab[role="tab"]{
+  appearance:none;
+  background:#fff;
+  color:var(--ui-fg);
+  border:1.5px solid var(--ui-border);
+  border-radius:9999px;
+  padding:.5rem .9rem;
+  font-weight:600; line-height:1;
+  transition:background .15s,color .15s,border-color .15s,box-shadow .15s,transform .02s;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.02);
 }
+.gg-embeds .tabs .tab[role="tab"]:hover{ border-color:var(--ui-border-2); }
 
-/* Inactive hover/focus */
-.gg-embeds .tabs .tab[role="tab"]:hover { border-color: var(--ui-border-2); }
-.gg-embeds .tabs .tab[role="tab"]:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--par3-green) 35%, transparent);
-  outline-offset: 2px;
-}
-
-/* ACTIVE tab: green background + yellow text (Par-3 match) */
+/* ACTIVE tab = solid green bg + yellow text (exact Par-3 treatment) */
 .gg-embeds .tabs .tab[role="tab"][aria-selected="true"],
-.gg-embeds .tabs .tab.active {
-  background: var(--par3-green);
-  color: var(--par3-yellow);
-  border-color: color-mix(in srgb, var(--par3-green) 70%, #000 30%);
-  box-shadow: 0 1px 2px rgba(0,0,0,.06), inset 0 0 0 1px rgba(255,255,255,.15);
+.gg-embeds .tabs .tab.active{
+  background:var(--par3-green);
+  color:var(--par3-yellow);
+  border-color:color-mix(in srgb, var(--par3-green) 75%, #000 25%);
+  box-shadow:0 1px 2px rgba(0,0,0,.06), inset 0 0 0 1px rgba(255,255,255,.12);
 }
-
-/* ACTIVE hover/pressed */
 .gg-embeds .tabs .tab[role="tab"][aria-selected="true"]:hover,
-.gg-embeds .tabs .tab.active:hover { background: var(--par3-green-2); }
+.gg-embeds .tabs .tab.active:hover{
+  background:var(--par3-green-2);
+}
 .gg-embeds .tabs .tab[role="tab"][aria-selected="true"]:active,
-.gg-embeds .tabs .tab.active:active { transform: translateY(0.5px); }
+.gg-embeds .tabs .tab.active:active{ transform:translateY(.5px); }
 
-/* Cards & chips — stronger borders like main page */
-.gg-embeds .card {
-  border: 1.5px solid var(--ui-border-2);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+/* Cards & pills — darker borders like main page */
+.gg-embeds .card{
+  border:1.5px solid var(--ui-border-2);
+  border-radius:1rem;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
-.gg-embeds .pill, .gg-embeds .chip {
-  border: 1.5px solid var(--ui-border-2);
-  border-radius: 9999px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
+.gg-embeds .pill,.gg-embeds .chip{
+  border:1.5px solid var(--ui-border-2);
+  border-radius:9999px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.02);
 }
 
-/* Dark mode tweaks */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ui-fg:#e5e7eb;
-    --ui-border:#334155;   /* slate-700 */
-    --ui-border-2:#475569; /* slate-600 */
-  }
-  .gg-embeds .card { box-shadow: 0 1px 2px rgba(0,0,0,.35); }
-  /* Keep active colors the same so they match Par-3 exactly */
+/* Dark mode */
+@media (prefers-color-scheme: dark){
+  :root{ --ui-fg:#e5e7eb; --ui-border:#334155; --ui-border-2:#475569; }
+  .gg-embeds .card{ box-shadow:0 1px 2px rgba(0,0,0,.35); }
 }
 
   
