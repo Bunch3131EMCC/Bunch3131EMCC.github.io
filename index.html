@@ -76,6 +76,9 @@
     .btn.alt{background:#fff;color:var(--fg);border-color:var(--border)}
     .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px}
     a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
+    /* Logo inside a pill: size + vertical align */
+.pill-logo { height: 24px; width: auto; vertical-align: middle; display: inline-block; }
+
 
     /* Schedule card typography */
     #schedule-today .sched-heading { font-size:18px !important; font-weight:800 !important; margin:0 0 8px 0 !important; }
@@ -336,20 +339,20 @@ document.addEventListener('DOMContentLoaded', function(){
   <h2>Event Hub</h2>
   <div class="pill-group">
 
-    <!-- Original combined pill -->
-    <button class="pill" onclick="window.location.href='matches.html'">
+    <!-- Single pill with middle dots -->
+    <a class="pill" href="matches.html">
       Matches &middot; Leaderboards &middot; Stats
-    </button>
+    </a>
 
-    <!-- Original Golf Genius pill -->
-    <button class="pill" onclick="window.open('https://www.golfgenius.com/app', '_blank')">
-      Golf Genius
-    </button>
+    <!-- Golf Genius pill (logo) -->
+    <a class="pill" href="https://www.golfgenius.com/app" target="_blank" rel="noopener">
+      <img src="assets/golfgeniuslogo.png" alt="Golf Genius" class="pill-logo" />
+    </a>
 
-    <!-- ✅ New Horse Race Live Updates pill -->
-    <button class="pill" onclick="window.location.href='updates.html'">
+    <!-- Horse Race Live Updates pill (text) -->
+    <a class="pill" href="updates.html">
       Horse Race Live Updates
-    </button>
+    </a>
 
   </div>
 </div>
