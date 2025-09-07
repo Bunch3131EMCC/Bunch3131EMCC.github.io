@@ -148,56 +148,68 @@ html, body { height: 100%; }
 <body>
 
   <div class="wrap">
-<!-- Page Header (grid layout: left arrow · centered title · right spacer) -->
-<div class="page-header">
-  <a href="index.html" class="btn-home" aria-label="Back to Home">
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
-    </svg>
-  </a>
-  <h2 class="page-title">Tournament Info</h2>
-  <span class="right-spacer" aria-hidden="true"></span>
+<!-- Page Header (padded to match .wrap on other pages) -->
+<div class="page-header-bar">
+  <div class="page-header">
+    <a href="index.html" class="btn-home" aria-label="Back to Home">
+      <!-- crisp SVG arrow -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
+      </svg>
+    </a>
+    <h2 class="page-title">Tournament Info</h2>
+    <span class="right-spacer" aria-hidden="true"></span>
+  </div>
 </div>
 
 <style>
-/* Grid header avoids absolute positioning/clipping */
-.page-header{
-  display:grid;
-  grid-template-columns: 28px 1fr 28px; /* arrow | title | spacer */
-  align-items:center;
-  margin: 8px 0 16px;
-  overflow:visible; /* be generous on full-bleed frames */
+/* === Scoped header styles (won't affect other pages) === */
+
+/* Give this page header the same horizontal padding & max-width as .wrap */
+.page-header-bar{
+  padding: 0 24px;                /* match your .wrap padding */
+  box-sizing: border-box;
+  margin: 8px auto 16px;
+  max-width: 860px;               /* match your .wrap max-width */
 }
 
-/* Circular pill arrow */
+/* Grid keeps title perfectly centered independent of the arrow */
+.page-header{
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;  /* arrow | title | spacer */
+  align-items: center;
+}
+
+/* Circle arrow: exact size match and no clipping */
 .btn-home{
-  grid-column:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  border:1px solid #9ca3af;  /* matches var(--border) */
-  background:#fff;
-  color:#111827;              /* matches var(--fg) */
-  text-decoration:none;
-  transition:background .2s;
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;         /* include border in the 28px box */
+  border-radius: 50%;
+  border: 1px solid #9ca3af;      /* = var(--border) */
+  background: #fff;
+  color: #111827;                 /* = var(--fg) */
+  text-decoration: none;
+  transition: background .2s;
 }
 .btn-home:hover{ background:#f3f4f6; }
-.btn-home svg{ display:block } /* no line-height spill */
+.btn-home svg{ display:block }     /* avoid font/line-height issues */
 
-/* Centered title, same spec as “Today” */
+/* Title standardized to match "Today" (18px/800/center) */
 .page-title{
-  grid-column:2;
-  margin:0;
-  text-align:center;
-  font-size:18px;
-  font-weight:800;
+  grid-column: 2;
+  margin: 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
 }
 
-/* Right spacer balances the grid visually */
-.right-spacer{ grid-column:3; width:28px; height:28px; }
+/* Right spacer balances the grid so centering is true */
+.right-spacer{ grid-column: 3; width:28px; height:28px; }
 </style>
 
 
