@@ -3,32 +3,16 @@
 <head>
 
   <script>
-/* No-flash guard with iOS-only browser hide */
+/* No-flash guard: only hide if they've already enabled push */
 (function () {
   try {
-    // Detect iOS (iPhone/iPad/iPod or Mac with touch points)
-    var ua = navigator.userAgent || "";
-    var isIOS = /iPad|iPhone|iPod/.test(ua) ||
-                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-    // Detect standalone (A2HS app) mode
-    var isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
-
-    // Only hide the card automatically in iOS Safari tabs (not A2HS, not Android)
-    if (isIOS && !isStandalone) {
-      document.documentElement.classList.add('hide-push-card');
-    }
-
-    // Respect prior opt-in flag (both platforms)
-    var isDone = localStorage.getItem('pheasant_push_done') === '1';
-    if (isDone) {
+    if (localStorage.getItem('pheasant_push_done') === '1') {
       document.documentElement.classList.add('hide-push-card');
     }
   } catch (e) {}
 })();
 </script>
+
 
   
   <meta charset="utf-8" />
@@ -417,25 +401,45 @@ document.addEventListener('DOMContentLoaded', function(){
   const card    = document.getElementById('push-card');
   if (!subBtn || !card) return;
 
+  // Detect iOS + standalone
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  // Normal “is subscribed” check
   const supported = OneSignal.Notifications.isPushSupported?.() === true;
   const ok = supported &&
              (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
              OneSignal?.User?.PushSubscription?.optedIn === true &&
              !!OneSignal?.User?.PushSubscription?.id;
 
-  // Use [hidden] attribute so it plays nice with your other script
+  // Hide the whole card once fully OK (both platforms)
   card.hidden = !!ok;
 
-  if (!ok) {
-    subBtn.style.display = '';
+  // iOS Safari tab: show card with A2HS guidance, override click to teach A2HS
+  if (isIOS && !isStandalone && !ok) {
+    card.hidden = false;                 // ensure visible in Safari tab
+    subBtn.disabled = false;
+    subBtn.textContent = 'Add to Home Screen to enable';
+    subBtn.onclick = () => {
+      alert('On iPhone: tap the Share button ↑, choose "Add to Home Screen", then open the app and tap Enable Notifications.');
+    };
     if (iosInfo) iosInfo.style.display = '';
-    // Only touch diagnostics button if it exists
-    const diagBtn = document.getElementById('btn-diagnostics');
-    if (diagBtn) diagBtn.style.display = '';
+    try { showStatus(OneSignal); } catch {}
+    return; // prevent wiring the real subscribe action here
   }
+
+  // Android browser OR iOS A2HS app: keep real subscribe UX
+  subBtn.disabled = false;
+  subBtn.textContent = 'Enable Notifications';
+  if (iosInfo) iosInfo.style.display = '';
 
   try { showStatus(OneSignal); } catch {}
 }
+
 
 
     window.addEventListener('load', () => {
