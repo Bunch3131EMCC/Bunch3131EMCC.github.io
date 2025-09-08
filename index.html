@@ -1,10 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script>
-  /* Start fully hidden; we'll reveal after we decide about the push card */
-  document.documentElement.classList.add('push-hidden');
-</script>
+
   <script>
 /* No-flash guard: only hide if they've already enabled push */
 (function () {
@@ -16,14 +13,7 @@
 })();
 </script>
 
-<style>
-  /* Push card is hidden by default; show only when html has .show-push */
-  .push-card { display: none; }
-  html.show-push .push-card { display: block; }
 
-  /* Hide whole page briefly to prevent flicker until logic runs */
-  html.push-hidden { visibility: hidden; }
-</style>
   
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -205,110 +195,6 @@
 
   </style>
 </head>
-<script>
-(function () {
-  const STORAGE_KEY = 'pheasant_push_done'; // keep your existing key
-
-  function isiOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent);
-  }
-
-  function isInstalledPWA() {
-    // iOS Safari uses navigator.standalone; other browsers expose display-mode
-    return window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
-  }
-
-  async function hasPushSubscription() {
-    try {
-      if (!('serviceWorker' in navigator)) return false;
-      const reg = await navigator.serviceWorker.ready.catch(() => null);
-      if (!reg || !reg.pushManager) return false;
-      const sub = await reg.pushManager.getSubscription();
-      return !!sub;
-    } catch {
-      return false;
-    }
-  }
-
-  function canRequestPushNow() {
-    const hasBasics = ('serviceWorker' in navigator) && ('PushManager' in window);
-    if (!hasBasics) return false;
-    if (isiOS()) return isInstalledPWA(); // iOS requires PWA install
-    return true; // Android/desktop can do it in-browser
-  }
-
-  function setCopyBlocks() {
-    const card = document.querySelector('.push-card');
-    if (!card) return;
-    const canNow = canRequestPushNow();
-    card.querySelectorAll('[data-when="can-push-now"]').forEach(el => el.style.display = canNow ? '' : 'none');
-    card.querySelectorAll('[data-when="needs-install"]').forEach(el => el.style.display = canNow ? 'none' : '');
-  }
-
-  async function decideAndReveal() {
-    let subscribed = false;
-
-    try {
-      // Fast path: local flag
-      subscribed = (localStorage.getItem(STORAGE_KEY) === '1');
-
-      // Confirm when possible
-      if (!subscribed) {
-        subscribed = await hasPushSubscription();
-      }
-
-      // Show the push card only if NOT subscribed
-      if (!subscribed) {
-        document.documentElement.classList.add('show-push');
-      } else {
-        document.documentElement.classList.remove('show-push');
-      }
-    } catch {
-      // Be safe: if logic fails, show the card so users can act
-      document.documentElement.classList.add('show-push');
-    } finally {
-      // Set platform-appropriate copy and reveal page (remove no-flash)
-      setCopyBlocks();
-      document.documentElement.classList.remove('push-hidden');
-    }
-  }
-
-  // Optional: wire the Enable button; uses your existing subscribe routine if present
-  async function wireEnableButton() {
-    const btn = document.getElementById('enable-push');
-    if (!btn) return;
-    btn.addEventListener('click', async () => {
-      try {
-        // If you already have a function like subscribeToPush(), we call it:
-        if (typeof window.subscribeToPush === 'function') {
-          await window.subscribeToPush();
-        } else {
-          // Minimal inline subscribe flow (only runs if you haven't defined your own):
-          if (!('serviceWorker' in navigator)) throw new Error('No SW');
-          const reg = await navigator.serviceWorker.ready;
-          const perm = await Notification.requestPermission();
-          if (perm !== 'granted') throw new Error('Permission denied');
-
-          // Replace with YOUR VAPID public key and server call if you handle web push
-          // This placeholder simply creates a browser-side subscription (no server).
-          if (!reg.pushManager) throw new Error('No PushManager');
-          await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: undefined });
-        }
-
-        // Mark done and hide the card immediately
-        localStorage.setItem(STORAGE_KEY, '1');
-        document.documentElement.classList.remove('show-push');
-      } catch (err) {
-        console.error('[push] subscribe failed:', err);
-        // Optionally show a toast/error UI
-      }
-    });
-  }
-
-  wireEnableButton();
-  decideAndReveal();
-})();
-</script>
 
 <body>
   <div class="wrap">
@@ -322,21 +208,16 @@
 
    <!-- Push subscribe card -->
 <div class="card" id="push-card">
- <section class="card push-card" id="push-card">
-  <!-- Shown when we can request push RIGHT NOW (Android browsers, or iOS PWA) -->
-  <div data-when="can-push-now" style="display:none">
-    <h3>Enable Tournament Alerts</h3>
-    <button id="enable-push" type="button">Enable Notifications</button>
-    <!-- optional tiny helper text -->
-    <p class="muted" style="margin-top:6px">You can turn these off any time in system settings.</p>
+  <div class="row" style="display:flex;flex-direction:column;align-items:center">
+    <p id="ios-instructions" 
+       style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
+      Welcome to The Pheasant!! Please click enable notifications below so you can receive important alerts during the event.
+    </p>
+    <p style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
+      <em>IMPORTANT!! iPhone Users: You must Add to Home Screen before enabling notifications. If you don't know what that means, ask someone younger than you.</em>
+    </p>
+    <button id="btn-subscribe" class="btn">Enable Notifications</button>
   </div>
-
-  <!-- Shown when the user must install first (iOS Safari not installed) -->
-  <div data-when="needs-install" style="display:none">
-    <h3>Add to Home Screen to enable notifications</h3>
-    <p>Tap the share icon → “Add to Home Screen”, then reopen the app to turn on alerts.</p>
-  </div>
-</section>
 </div>
 
 
