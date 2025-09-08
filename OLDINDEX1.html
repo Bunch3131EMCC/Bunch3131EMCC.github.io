@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+  <script>
+/* No-flash guard: only hide if they've already enabled push */
+(function () {
+  try {
+    if (localStorage.getItem('pheasant_push_done') === '1') {
+      document.documentElement.classList.add('hide-push-card');
+    }
+  } catch (e) {}
+})();
+</script>
+
+
+  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-title" content="Pheasant App" />
+  <meta name="application-name" content="Pheasant App" />
+  <title>Pheasant App</title>
+
+
+  <link rel="manifest" href="manifest.json?v=6" />
+  <link rel="icon" href="assets/icon_20pt@3x.png?v=6" sizes="32x32" />
+
+  <!-- iOS / Safari icons -->
+  <link rel="apple-touch-icon" sizes="40x40"  href="assets/icon_20pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="60x60"  href="assets/icon_20pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="58x58"  href="assets/icon_29pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="87x87"  href="assets/icon_29pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="80x80"  href="assets/icon_40pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_40pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/icon_60pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon_60pt@3x.png?v=6">
+  <link rel="apple-touch-icon" sizes="76x76"  href="assets/icon_76pt@1x.png?v=6">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon_76pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="167x167" href="assets/icon_83_5pt@2x.png?v=6">
+  <link rel="apple-touch-icon" sizes="1024x1024" href="assets/icon_1024pt@1x.png?v=6">
+
+
+
+
+  
+  <style>
+    :root {
+  --bg: #ffffff;
+  --fg: #111827;    /* gray-900 */
+  --muted: #6b7280; /* gray-500 */
+  --border: #9ca3af;/* gray-400 */
+  --accent: #2563eb;/* blue-600 */
+}
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:860px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+    .logo{display:flex;align-items:center;justify-content:center}
+    .logo img{width:60px;height:60px;border-radius:14px}
+
+    h1{margin:0;font-size:28px;font-weight:800}
+    .muted{color:var(--muted)}
+    .card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:1px solid #111827;background:#111827;color:#fff;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn.alt{background:#fff;color:var(--fg);border-color:var(--border)}
+    .grid{display:grid;grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px}
+    a.pill{ text-decoration:none; text-align:center; padding:10px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:#000 }
+    /* Logo inside a pill: size + vertical align */
+.pill-logo { height: 24px; width: auto; vertical-align: middle; display: inline-block; }
+
+    /* Stack Event Hub pills vertically */
+.stacked-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* space between pills */
+}
+
+.stacked-pills .pill {
+  display: block;    /* full-width clickable pill */
+  width: 100%;       /* optional: stretch pill to parent width */
+  max-width: 300px;  /* optional: limit pill size */
+  margin: 0 auto;    /* center pills horizontally */
+}
+
+
+    /* Schedule card typography */
+    #schedule-today .sched-heading { font-size:18px !important; font-weight:800 !important; margin:0 0 8px 0 !important; }
+    #schedule-today .sched-sub     { font-size:14px !important; font-weight:600 !important; margin:4px 0 !important; }
+    #schedule-today .sched-item    { font-size:14px !important; line-height:1.3 !important; }
+    /* Keep the list left-aligned */
+#schedule-today { text-align: left; }
+
+/* Center ONLY the "Today" title */
+#schedule-today .sched-heading{
+  font-size:18px !important;
+  font-weight:800 !important;
+  margin:0 0 8px 0 !important;
+  text-align:center !important;
+  display:block;         /* helps if the JS puts it in a flex row */
+  width:100%;            /* ensures full width for proper centering */
+}
+
+
+    #sw-status { display:none !important; }
+.par3-btn {
+  display:inline-block;
+  padding:12px 20px;
+  border-radius:999px;
+  background:#228B22;       /* forest green */
+  color:#FFD700;            /* yellow text */
+  font-weight:700;
+  text-decoration:none;
+  border:2px solid #196619; /* darker green border */
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  transition:background 0.2s, transform 0.2s;
+}
+
+.par3-btn:hover {
+  background:#196619;       /* darker green hover */
+  transform:translateY(-2px);
+}
+
+.center-line{
+  display:flex;
+  justify-content:center;
+  margin-top:16px;
+}
+[hidden]{ display:none !important; }
+
+ /* Default state (card can be shown) */
+#push-card { display: block; }
+
+/* If user already enabled push, never render the card */
+.hide-push-card #push-card { display: none !important; }
+/* Match Event Hub title styling to Schedule "Today" heading */
+.card h2 {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+}
+/* Page header wrapper */
+.page-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center title */
+  margin-bottom: 16px;
+}
+
+/* Small arrow button */
+.btn-home {
+  position: absolute;       /* keeps it on the left without affecting centering */
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;    /* removes underline */
+  transition: background 0.2s;
+}
+.btn-home:hover { background: #f3f4f6; }
+
+/* Page title (standardized with "Today") */
+.page-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  text-align: center;
+}
+
+
+
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><img src="assets/icon_60pt@3x.png" alt="Pheasant logo" /></div>
+      <div>
+        <h1>The Pheasant</h1>
+        <div class="muted">Alerts • Schedule • Leaderboard</div>
+      </div>
+    </header>
+
+   <!-- Push subscribe card -->
+<div class="card" id="push-card">
+  <div class="row" style="display:flex;flex-direction:column;align-items:center">
+    <p id="ios-instructions" 
+       style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
+      Welcome to The Pheasant!! Please click enable notifications below so you can receive important alerts during the event.
+    </p>
+    <p style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
+      <em>IMPORTANT!! iPhone Users: You must Add to Home Screen before enabling notifications. If you don't know what that means, ask someone younger than you.</em>
+    </p>
+    <button id="btn-subscribe" class="btn">Enable Notifications</button>
+  </div>
+</div>
+
+
+
+   
+    <!-- Notifications Inbox (home summary) -->
+   <!-- <div class="card" id="recent-alerts" style="margin-top:16px;"></div> -->
+
+<!-- Start of Golf Genius Card -->
+
+<!-- === Golf Genius Card (stacked white pill style, bold text) === -->
+<div id="gg-card" class="gg-card">
+  <div class="gg-card-content">
+    <p class="gg-instructions">
+      Please install the Golf Genius app below to enter your scores.
+    </p>
+
+    <!-- Logo pill -->
+    <button id="gg-smart-btn" class="gg-pill-btn gg-logo-btn" type="button" aria-label="Download Golf Genius">
+      <img src="assets/golfgeniuslogo.png" alt="Golf Genius" class="gg-logo">
+    </button>
+
+    <!-- Acknowledge pill -->
+    <button id="gg-hide-btn" class="gg-pill-btn gg-secondary-btn" type="button">
+      I’ve got it
+    </button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="gg-modal" class="gg-modal" hidden>
+  <div class="gg-modal-content">
+    <p class="gg-modal-text">
+      Please use the Golf Genius App to enter your scores during the event.<br>
+      All other information can be found here.
+    </p>
+    <button id="gg-close-modal" class="gg-pill-btn gg-secondary-btn" type="button">OK</button>
+  </div>
+</div>
+
+<style>
+  /* Card container */
+  .gg-card{
+    max-width:400px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:16px;
+    background:var(--card,#fff);
+    color:var(--fg,#111827);
+    border:1px solid var(--border,#e5e7eb);
+    box-shadow:0 2px 6px rgba(0,0,0,.05);
+    text-align:center;
+  }
+  .gg-instructions{
+    font-size:16px;
+    margin-bottom:16px;
+    font-weight:700; /* bold text */
+  }
+
+  /* Pill button base (stacked vertically) */
+  .gg-pill-btn{
+    display:block;
+    width:fit-content;
+    margin:8px auto;
+    border-radius:9999px;
+    padding:10px 20px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s ease, transform .1s ease;
+  }
+  .gg-pill-btn:active{transform:scale(.97)}
+
+  /* White pill with border */
+  .gg-logo-btn,
+  .gg-secondary-btn{
+    background:#fff;
+    border:1px solid var(--border,#e5e7eb);
+    color:var(--fg,#111827);
+  }
+  .gg-logo-btn:hover,
+  .gg-secondary-btn:hover{
+    background:#f9fafb;
+  }
+
+  .gg-logo{
+    height:28px;
+    width:auto;
+    display:block;
+  }
+
+  /* Modal */
+  .gg-modal[hidden]{display:none !important;}
+  .gg-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:flex;
+  align-items:flex-start;   /* 👈 push to top instead of center */
+  justify-content:center;
+  padding-top:60px;         /* 👈 optional spacing from very top */
+  z-index:1000;
+  }
+  .gg-modal-content{
+    background:#fff;
+    color:#111827;
+    padding:20px;
+    border-radius:12px;
+    max-width:320px;
+    text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.15);
+  }
+  .gg-modal-text{
+    font-weight:700; /* bold text inside modal */
+    font-size:15px;
+    line-height:1.4;
+  }
+
+  .page-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centers the title */
+  margin-bottom: 16px;
+}
+
+/* Circular pill arrow */
+.btn-home {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;        /* circle shape */
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-home:hover {
+  background: #f3f4f6;
+}
+
+/* Page title standardized */
+.page-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  text-align: center;
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const IOS_URL = "https://apps.apple.com/us/app/golf-genius/id555651262";
+  const AND_URL = "https://play.google.com/store/apps/details?id=com.golftripgenius.android.leaguegenius";
+  const STORAGE_KEY = "gg_hidden_pheasant_2025";
+
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent||"") ||
+                      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+  const isAndroid = () => /Android/i.test(navigator.userAgent||"");
+
+  const card = document.getElementById('gg-card');
+  const openBtn = document.getElementById('gg-smart-btn');
+  const hideBtn = document.getElementById('gg-hide-btn');
+  const modal = document.getElementById('gg-modal');
+  const closeBtn = document.getElementById('gg-close-modal');
+
+  // If previously acknowledged, hide card
+  if(localStorage.getItem(STORAGE_KEY)==="true"){
+    card.style.display = 'none';
+  }
+
+  // Open correct store
+  openBtn.addEventListener('click', function(){
+    const url = isIOS()? IOS_URL : (isAndroid()? AND_URL : IOS_URL);
+    location.assign(url);
+  });
+
+  // Show modal on "I've got it"
+  hideBtn.addEventListener('click', function(){
+    modal.hidden = false;
+  });
+
+  // Close modal -> hide card + persist
+  closeBtn.addEventListener('click', function(){
+    modal.hidden = true;
+    card.style.display = 'none';
+    localStorage.setItem(STORAGE_KEY, 'true');
+  });
+});
+</script>
+<!-- === /Golf Genius Card (stacked white pill style, bold text) === -->
+
+    
+<!-- END of Golf Genius Card -->    
+    <!-- Schedule summary -->
+    <div class="card" id="schedule-today" style="margin-top:16px;"></div>
+
+     <!-- Centered Par 3 Contest button -->
+    <div style="margin-top:24px; text-align:center;">
+      <a id="btn-par3-map"
+         class="par3-btn"
+         href="/par3-map.html"
+         style="display:none">
+         Par 3 Contest Tee Locations
+      </a>
+    </div>
+
+    
+<!-- Event Hub Section -->
+<div class="card">
+  <h2>Event Hub</h2>
+  <div class="pill-group stacked-pills">
+
+    <!-- Single pill with middle dots -->
+    <a class="pill" href="gg-embeds.html">
+      Matches &middot; Leaderboards &middot; Stats
+    </a>
+
+    <!-- Golf Genius pill (logo) -->
+    <a class="pill" href="golfgenius://" target="_blank" rel="noopener">
+      <img src="assets/golfgeniuslogo.png" alt="Golf Genius" class="pill-logo" />
+    </a>
+
+    <!-- Horse Race Live Updates pill (text) -->
+    <a class="pill" href="updates.html">
+      Horse Race Live Updates
+    </a>
+
+  </div>
+</div>
+
+
+
+<style>
+  /* reuse existing pill styling */
+  .gg-pill-btn{
+    display:block;
+    width:100%;
+    max-width:250px;     /* keeps it from being too wide */
+    margin:8px auto;
+    border-radius:9999px;
+    padding:10px 20px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    background:#fff;
+    border:1px solid var(--border,#e5e7eb);
+    color:var(--fg,#111827);
+    text-align:center;
+    transition:background .2s ease, transform .1s ease;
+  }
+  .gg-pill-btn:hover{ background:#f9fafb; }
+  .gg-logo{ height:28px; width:auto; display:block; margin:0 auto; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const openBtn = document.getElementById('gg-open-app');
+  if (!openBtn) return;
+
+  const APP_SCHEME = "golfgenius://";
+
+  openBtn.addEventListener('click', function(){
+    window.location.href = APP_SCHEME;
+
+    
+  });
+});
+</script>
+
+
+
+
+    <!-- SW status (debug helper) -->
+    <div id="sw-status" class="muted" style="margin-top:8px;font-size:12px;"></div>
+  </div>
+
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js?v=6"></script>
+
+  <!-- OneSignal init + UI logic (guarded) -->
+  <script>
+    window.__OS_INITED__ = window.__OS_INITED__ || false;
+    window.__OS_FG_BRIDGE__ = window.__OS_FG_BRIDGE__ || false;
+    const log = (...a) => console.log('[Pheasant]', ...a);
+
+    function granted(OneSignal) {
+      const p = OneSignal.Notifications.permission;
+      return p === true || p === 'granted';
+    }
+    function showStatus(OneSignal) {
+      const el = document.getElementById('push-status');
+      if (!el || !OneSignal?.Notifications) return;
+      const supported = OneSignal.Notifications.isPushSupported();
+      const perm  = OneSignal.Notifications.permission;
+      const id    = OneSignal?.User?.PushSubscription?.id || null;
+      const opted = OneSignal?.User?.PushSubscription?.optedIn === true;
+      el.textContent = `supported=${supported} · permission=${String(perm)} · optedIn=${opted} · id=${id ? id.slice(0,8)+'…' : 'null'}`;
+    }
+    function refreshUI(OneSignal) {
+  const subBtn  = document.getElementById('btn-subscribe');
+  const iosInfo = document.getElementById('ios-instructions');
+  const card    = document.getElementById('push-card');
+  if (!subBtn || !card) return;
+
+  // Detect iOS + standalone
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  // Normal “is subscribed” check
+  const supported = OneSignal.Notifications.isPushSupported?.() === true;
+  const ok = supported &&
+             (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
+             OneSignal?.User?.PushSubscription?.optedIn === true &&
+             !!OneSignal?.User?.PushSubscription?.id;
+
+  // Hide the whole card once fully OK (both platforms)
+  card.hidden = !!ok;
+
+  // iOS Safari tab: show card with A2HS guidance, override click to teach A2HS
+  if (isIOS && !isStandalone && !ok) {
+    card.hidden = false;                 // ensure visible in Safari tab
+    subBtn.disabled = false;
+    subBtn.textContent = 'Add to Home Screen to enable';
+    subBtn.onclick = () => {
+      alert('On iPhone: tap the Share button ↑, choose "Add to Home Screen", then open the app and tap Enable Notifications.');
+    };
+    if (iosInfo) iosInfo.style.display = '';
+    try { showStatus(OneSignal); } catch {}
+    return; // prevent wiring the real subscribe action here
+  }
+
+  // Android browser OR iOS A2HS app: keep real subscribe UX
+  subBtn.disabled = false;
+  subBtn.textContent = 'Enable Notifications';
+  if (iosInfo) iosInfo.style.display = '';
+
+  try { showStatus(OneSignal); } catch {}
+}
+
+
+
+    window.addEventListener('load', () => {
+      if (window.__OS_INITED__) return;
+      window.__OS_INITED__ = true;
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function (OneSignal) {
+        try {
+          await OneSignal.init({
+            appId: '5f9e9dc2-5680-402a-876a-ff04423c131a',
+            serviceWorkerPath: '/OneSignalSDKWorker.js',
+            serviceWorkerUpdaterPath: '/OneSignalSDKUpdaterWorker.js'
+          });
+
+          // Context tag (optional)
+          try {
+            await OneSignal.User.addTags({
+              channel: (window.matchMedia('(display-mode: standalone)').matches ? 'pwa' : 'browser'),
+              origin: location.origin
+            });
+          } catch {}
+
+         // Foreground/Click bridge (ensures logging even if inbox.js loads late)
+if (!window.__OS_FG_BRIDGE__) {
+  window.__OS_FG_BRIDGE__ = true;
+
+  // tiny helper to forward into inbox.js
+  const forward = (src, evt) => {
+    try {
+      const n = (evt && evt.notification) || evt || {};
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: n.title || '', body: n.body || '', data: n.data || {}, at: Date.now(), src }
+      }, '*');
+    } catch (e) {
+      console.warn('forward error', e);
+    }
+  };
+
+  // Fires just before a notif shows while app is open
+  try {
+    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (evt) => {
+      forward('fgWillDisplay', evt);
+      try {
+        if (evt?.preventDefault) evt.preventDefault(); // keep banner behavior consistent
+        const n = evt?.notification;
+        if (n?.display) n.display();
+      } catch {}
+    });
+  } catch (e) {
+    console.warn('hook fgWillDisplay failed', e);
+  }
+
+  // Fires when the user taps a notif while the app is open
+  try {
+    OneSignal.Notifications.addEventListener('click', (evt) => {
+      forward('click', evt);
+    });
+  } catch (e) {
+    console.warn('hook click failed', e);
+  }
+}
+
+
+
+          // UI wiring
+          OneSignal.User.PushSubscription.addEventListener('change', () => refreshUI(OneSignal));
+          OneSignal.Notifications.addEventListener('permissionChange', () => refreshUI(OneSignal));
+
+          const subBtn  = document.getElementById('btn-subscribe');
+const diagBtn = document.getElementById('btn-diagnostics');
+if (subBtn) {
+  subBtn.onclick = async () => {
+    try {
+      log('optIn click');
+      await OneSignal.User.PushSubscription.optIn();
+
+// NEW: remember success so the no-flash guard hides the card pre-paint
+      localStorage.setItem('pheasant_push_done', '1');
+      
+      // Tag (optional)
+      try { await OneSignal.User.addTag('players','true'); } catch {}
+
+      // Optimistic hide immediately
+      const card = document.getElementById('push-card');
+      if (card) card.hidden = true;
+
+      // Re-check a few times in case OneSignal state lags
+      const retries = [150, 600, 2000];
+      for (const ms of retries) {
+        await new Promise(r => setTimeout(r, ms));
+        refreshUI(OneSignal);
+        const ok =
+          OneSignal?.Notifications?.isPushSupported?.() === true &&
+          (OneSignal?.Notifications?.permission === true || OneSignal?.Notifications?.permission === 'granted') &&
+          OneSignal?.User?.PushSubscription?.optedIn === true &&
+          !!OneSignal?.User?.PushSubscription?.id;
+        if (ok) break;
+      }
+    } catch (e) {
+      console.error('optIn error', e);
+      alert('Subscribe error: ' + (e?.message || e));
+      // If anything failed, show the card again so they can retry
+      const card = document.getElementById('push-card');
+      if (card) card.hidden = false;
+    } finally {
+      refreshUI(OneSignal);
+    }
+  };
+}
+
+          if (diagBtn) {
+            diagBtn.onclick = async () => {
+              const supported = OneSignal.Notifications.isPushSupported();
+              const p   = OneSignal.Notifications.permission;
+              const id  = OneSignal.User.PushSubscription.id;
+              const tok = OneSignal.User.PushSubscription.token;
+              const opt = OneSignal.User.PushSubscription.optedIn;
+              alert(`supported=${supported}\npermission=${String(p)}\noptedIn=${opt}\nid=${id || '(null)'}\ntoken=${tok || '(none)'}`);
+              showStatus(OneSignal);
+            };
+          }
+
+          refreshUI(OneSignal);
+          setTimeout(() => refreshUI(OneSignal), 500);
+          setTimeout(() => refreshUI(OneSignal), 2000);
+        } catch (e) {
+          console.error('init error', e);
+          alert('Init error: ' + (e?.message || e));
+        }
+      });
+    });
+  </script>
+
+  <!-- Inbox module -->
+  <script type="module" src="assets/inbox.js?v=18"></script>
+
+ 
+  
+  <!-- Schedule -->
+  <script defer src="assets/schedule.js?v=16"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      renderScheduleSummary('schedule-today', 'schedule.json');
+    });
+  </script>
+
+  <!-- SW status + auto-reload -->
+  <script>
+    (async () => {
+      const el = document.getElementById('sw-status');
+      if (!el || !('serviceWorker' in navigator)) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const ctrl = !!navigator.serviceWorker.controller;
+        const url  = reg?.active?.scriptURL || '(none)';
+        el.textContent = `SW controlled=${ctrl} • script=${url}`;
+      } catch {
+        el.textContent = 'SW controlled=false • script=(none)';
+      }
+    })();
+    if ('serviceWorker' in navigator) {
+      let refreshed = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshed) return;
+        refreshed = true;
+        location.reload();
+      });
+    }
+  </script>
+
+  <!-- Debug handlers -->
+  <script>
+    async function postToSW(msg) {
+      if (navigator.serviceWorker?.controller) {
+        navigator.serviceWorker.controller.postMessage(msg);
+        return true;
+      }
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if (reg?.active) { reg.active.postMessage(msg); return true; }
+      } catch {}
+      return false;
+    }
+
+    document.getElementById('dbg-page-msg')?.addEventListener('click', () => {
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG Page→Inbox', body: 'manual postMessage', at: Date.now() }
+      }, '*');
+    });
+
+    document.getElementById('dbg-sw-msg')?.addEventListener('click', async () => {
+      const msg = { channel: 'pheasant-inbox-test', note: 'manual ping' };
+      let ok = await postToSW(msg);
+      if (!ok) { await new Promise(r => setTimeout(r, 300)); ok = await postToSW(msg); }
+      if (!ok) { await new Promise(r => setTimeout(r, 800)); ok = await postToSW(msg); }
+      if (!ok) alert('Could not reach Service Worker. Try reloading once.');
+      else alert('Sent SW ping. You should see "SW pong" in Recent Alerts.');
+    });
+
+    document.getElementById('dbg-os-fg')?.addEventListener('click', () => {
+      window.postMessage({
+        channel: 'pheasant-inbox',
+        payload: { title: 'DBG OS fg', body: 'simulated foreground', at: Date.now() }
+      }, '*');
+    });
+  </script>
+
+  <script>
+(function(){
+  const BTN_ID = 'btn-par3-map';
+
+  // === SET YOUR START/STOP TIMES HERE ===
+  // Leave as '' to make the button always visible.
+  // Format: 'YYYY-MM-DDTHH:MM' in local time.
+  const START_TIME = '2025-09-07T20:03';  // e.g. '2025-09-12T09:30'
+  const END_TIME   = '2025-09-11T12:00';  // e.g. '2025-09-12T15:00'
+  // ======================================
+
+  const btn = document.getElementById(BTN_ID);
+  if (!btn) return;
+
+  function parseTime(str){
+    if (!str) return null;
+    const d = new Date(str);
+    return isFinite(d.getTime()) ? d : null;
+  }
+
+  const start = parseTime(START_TIME);
+  const end   = parseTime(END_TIME);
+
+  function withinWindow(now){
+    // If either is missing, default to visible (always on)
+    if (!start || !end) return true;
+    return now >= start && now <= end;
+  }
+
+  function updateVisibility(){
+    btn.style.display = withinWindow(new Date()) ? '' : 'none';
+  }
+
+  updateVisibility();
+  setInterval(updateVisibility, 30 * 1000); // keep state fresh if page stays open
+})();
+</script>
+
+
+</body>
+</html>
