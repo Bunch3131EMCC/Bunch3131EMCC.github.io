@@ -210,6 +210,20 @@ html, body { height: 100%; }
 
 /* Right spacer balances the grid so centering is true */
 .right-spacer{ grid-column: 3; width:28px; height:28px; }
+
+  /* === GG Embeds: remove panel/iframe border, keep top tab divider === */
+.gg-embeds [role="tabpanel"].card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.gg-embeds .iframe-fluid iframe {
+  border: 0 !important;
+  outline: none !important; /* avoid focus ring showing as a border */
+  background: transparent;
+}
+
 </style>
 
 
