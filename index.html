@@ -869,6 +869,61 @@ if (subBtn) {
   setInterval(updateVisibility, 30 * 1000); // keep state fresh if page stays open
 })();
 </script>
+<script>
+/* Instant-hide after successful subscription (non-invasive) */
+(function () {
+  try {
+    var btn = document.getElementById('btn-subscribe');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      var start = Date.now();
+      var timeoutMs = 15000;      // stop checking after 15s
+      var card = document.getElementById('push-card');
+      var done = false;
+
+      function hideNow() {
+        if (done) return;
+        done = true;
+        try { localStorage.setItem('pheasant_push_done', '1'); } catch (e) {}
+        if (card) card.style.display = 'none';
+        // If your CSS hides via a class on <html>, also set it:
+        try { document.documentElement.classList.add('hide-push-card'); } catch (e) {}
+      }
+
+      function check() {
+        if (done) return;
+        try {
+          // If your existing code sets this key, respect it immediately.
+          if (localStorage.getItem('pheasant_push_done') === '1') return hideNow();
+
+          // If Notifications are granted, verify a Push subscription (if SW is ready).
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+              navigator.serviceWorker.ready
+                .then(function (reg) { return reg.pushManager.getSubscription(); })
+                .then(function (sub) { if (sub) hideNow(); })
+                .catch(function () { /* ignore */ });
+            } else {
+              // No SW info available—best effort: permission granted likely means subscribed.
+              hideNow();
+            }
+          }
+        } catch (e) { /* ignore */ }
+
+        if (!done && (Date.now() - start) < timeoutMs) {
+          setTimeout(check, 400);
+        }
+      }
+
+      // Start polling immediately after the click.
+      setTimeout(check, 0);
+    });
+  } catch (e) {
+    /* Never block UI */
+  }
+})();
+</script>
 
 
 </body>
