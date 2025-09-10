@@ -206,19 +206,64 @@
       </div>
     </header>
 
-   <!-- Push subscribe card -->
+ <!-- Push subscribe card -->
 <div class="card" id="push-card">
   <div class="row" style="display:flex;flex-direction:column;align-items:center">
-    <p id="ios-instructions" 
-       style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
-      Welcome to The Pheasant!! Please click enable notifications below so you can receive important alerts during the event.
-    </p>
+
+    <!-- General welcome -->
     <p style="margin:10px 0; font-weight:bold; font-size:1.1em; color:#111827; text-align:center;">
-      <em>IMPORTANT!! iPhone Users: You must Add to Home Screen before enabling notifications. If you don't know what that means, ask someone younger than you.</em>
+      Welcome to The Pheasant! Please enable notifications below so you can receive important alerts during the event.
     </p>
+
+    <!-- iPhone-only instructions (hidden by default; JS below decides when to show) -->
+    <div id="ios-box" style="display:none; border:1px solid #e5e7eb; border-radius:8px; padding:12px; background:#f9fafb; margin:12px 0; max-width:500px; text-align:left;">
+      <p style="margin-top:0; font-weight:bold; color:#111827; text-align:center;">
+        📱 iPhone Users — Stop & Read!
+      </p>
+      <ol style="margin:0; padding-left:20px; line-height:1.6; color:#111827;">
+        <li>
+          Open in <strong>Safari</strong>, then tap the <strong>Share</strong> button 
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin:0 4px;">
+            <path d="M12 3v12"/>
+            <path d="M16 7l-4-4-4 4"/>
+            <rect x="4" y="12" width="16" height="8" rx="2" ry="2"/>
+          </svg>
+          at the bottom of Safari.
+        </li>
+        <li>
+          Choose <strong>Add to Home Screen</strong>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin:0 4px;">
+            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+            <path d="M12 8v8M8 12h8"/>
+          </svg>
+        </li>
+        <li>Tap <strong>Add</strong> (top-right), then return here and tap Enable Notifications.</li>
+      </ol>
+    </div>
+
+    <!-- Button (all users) -->
     <button id="btn-subscribe" class="btn">Enable Notifications</button>
   </div>
 </div>
+
+<!-- Tiny, safe device check -->
+<script>
+(function () {
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOSDevice = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    // True Safari on iOS (exclude Chrome/Firefox/Edge on iOS which say CriOS/FxiOS/EdgiOS)
+    var isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+    // If already launched from Home Screen, navigator.standalone is true on iOS
+    var isStandalone = window.navigator.standalone === true;
+
+    var shouldShow = isIOSDevice && isSafari && !isStandalone;
+    var box = document.getElementById("ios-box");
+    if (box && shouldShow) box.style.display = "block";
+  } catch (e) { /* never block the page */ }
+})();
+</script>
+
 
 
 
